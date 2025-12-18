@@ -1,0 +1,18 @@
+{
+  "lockfileVersion": 1,
+  "configVersion": 1,
+  "workspaces": {
+    "": {
+      "name": "@grey-ts/template",
+      "dependencies": {
+        "@grey-ts/transpiler": "link:@grey-ts/transpiler",
+        "@grey-ts/types": "link:@grey-ts/types",
+      },
+    },
+  },
+  "packages": {
+    "@grey-ts/transpiler": ["@grey-ts/transpiler@link:@grey-ts/transpiler", { "bin": { "greyts": "dist/index.js" } }],
+
+    "@grey-ts/types": ["@grey-ts/types@link:@grey-ts/types", {}],
+  }
+}
