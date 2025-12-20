@@ -17,14 +17,13 @@
 	},
 	"license": "MIT",
 	"author": "Okka",
-	"type": "commonjs",
+	"type": "module",
 	"scripts": {
-		"build": "npx greyts transpile",
-		"push": "npx greybel-js build",
-		"build:push": "npm run build && npm run push"
+		"build": "node index.js"
 	},
 	"dependencies": {
+		"@grey-ts/transpiler": "link:@grey-ts/transpiler",
 		"@grey-ts/types": "link:@grey-ts/types",
-		"@grey-ts/transpiler": "link:@grey-ts/transpiler"
+		"greybel-js": "^3.7.10"
 	}
 }

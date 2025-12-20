@@ -3,6 +3,8 @@
   "compilerOptions": {
     // File Layout
     // "rootDir": "./src",
+	"module": "preserve",
+	"moduleResolution": "bundler",
 	
 	"types": ["@grey-ts/types"],
 	"noLib": true,
@@ -22,6 +24,9 @@
 
     "isolatedModules": true,
     "noUncheckedSideEffectImports": true,
+	"verbatimModuleSyntax": true,
+	"noEmit": true,
+	"allowArbitraryExtensions": true,
     "skipLibCheck": false,
   }
 }
