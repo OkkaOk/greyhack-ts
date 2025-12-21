@@ -3,13 +3,20 @@ import { baseName } from "../utils/libokka";
 import { FluxShell } from "./FluxShell";
 import { Stream } from "./Stream";
 
+type ProcessResources = {
+	0: Stream,
+	1: Stream,
+	2: Stream,
+	[fd: number]: Stream,
+}
+
 export class Process {
 	classID = "process";
 	pid: number;
 	nextFd = 3;
 	name;
-	parent: Process | null = null;
-	resources: Record<number, Stream>;
+	parent: Process;
+	resources: ProcessResources;
 
 	constructor(pid: number, name: string, parentProcess?: Process) {
 		this.pid = pid;
@@ -17,12 +24,10 @@ export class Process {
 
 		if (parentProcess) {
 			this.parent = parentProcess;
-			this.resources = {};
-			for (const fd of parentProcess.resources.indexes<number>()) {
-				this.resources[fd] = parentProcess.resources[fd];
-			}
+			this.resources = Object.assign({}, parentProcess.resources);
 		}
 		else {
+			this.parent = this;
 			this.resources = {
 				0: new Stream("stdin", "rw"),
 				1: new Stream("stdout", "rw"),
@@ -51,7 +56,7 @@ export class Process {
 
 	/** Flush the stream */
 	flush(fd: number) {
-		if (!this.resources.hasIndex(fd)) {
+		if (!this.resources[fd]) {
 			this.write(2, "Bad file descriptor (" + fd + ") [Process.flush]");
 			return false;
 		}
@@ -62,7 +67,7 @@ export class Process {
 
 	/** Writes data to a file descriptor */
 	write(fd: number, data: string | Array<string>, omitNewLine?: boolean) {
-		if (!this.resources.hasIndex(fd)) {
+		if (!this.resources[fd]) {
 			this.write(2, "Bad file descriptor (" + fd + ") [Process.write]");
 			return false;
 		}
@@ -86,7 +91,7 @@ export class Process {
 	read(fd: number, noSplit: true): string;
 	read(fd: number, noSplit?: boolean): string[];
 	read(fd: number, noSplit?: boolean): string | string[] {
-		if (!this.resources.hasIndex(fd)) {
+		if (!this.resources[fd]) {
 			this.write(2, "Bad file descriptor (" + fd + ") [Process.read]");
 			if (noSplit) return "";
 			return [];
@@ -139,7 +144,7 @@ export class Process {
 
 			let result = session.computer.touch(parentPath(filePath), fileName);
 			if (isType(result, "string")) {
-				if (result.indexOf("Can't create file") !== null) result = result.split("\.")[-1].trim();
+				if (result.indexOf("Can't create file") !== null && result.indexOf(".") != null) result = result.split("\.")[-1]!.trim();
 				this.write(2, `Failed to create file ${filePath}: ${result}`);
 				return null;
 			}
@@ -181,7 +186,7 @@ export class Process {
 
 	/** Closes a file descriptor */
 	close(fd: number) {
-		if (!this.resources.hasIndex(fd)) {
+		if (!this.resources[fd]) {
 			this.write(2, "Bad file descriptor (" + fd + ") [Process.close]");
 			return false;
 		}

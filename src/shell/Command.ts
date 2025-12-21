@@ -7,6 +7,7 @@ type CommandCategory = "Hacking" | "Networking" | "System Management" | "Data Op
 type SubcommandData = {
 	name: string;
 	description: string;
+	category?: CommandCategory;
 	arguments?: CommandArgument[];
 	options?: CommandOption[];
 	subcommands?: SubcommandData[];
@@ -59,7 +60,6 @@ export class Command implements CommandData {
 	examples: string[];
 
 	isFluxCommand: boolean;
-	shell: GreyHack.Shell | null = null;
 	file: GreyHack.File | null = null;
 
 	run?: (args: string[], options: RunFlags, process: Process) => ExitCodeType
@@ -77,10 +77,10 @@ export class Command implements CommandData {
 		this.examples = [];
 
 		this.requirements = null;
-		if (data.hasIndex("requirements"))
-			this.requirements = data.requirements!;
+		if (data.requirements)
+			this.requirements = data.requirements;
 
-		if (data.hasIndex("nonFlux") && data.nonFlux) {
+		if (data.nonFlux) {
 			this.valid = false; // It gets validated outside after the checks pass
 			this.isFluxCommand = false;
 		}
@@ -89,18 +89,18 @@ export class Command implements CommandData {
 			this.isFluxCommand = true;
 		}
 
-		if (data.hasIndex("acceptsStdin") && data.acceptsStdin)
+		if (data.acceptsStdin)
 			this.acceptsStdin = true;
 
-		if (data.hasIndex("hidden") && data.hidden)
+		if (data.hidden)
 			this.hidden = true;
 
-		if (data.hasIndex("examples") && data.examples!.length)
-			this.examples = data.examples!;
+		if (data.examples && data.examples.length)
+			this.examples = data.examples;
 
 		this.requiredArgCount = 0;
 		for (const arg of this.arguments) {
-			if (arg.hasIndex("required") && arg.required) {
+			if (arg.required) {
 				this.requiredArgCount++;
 			}
 		}
@@ -150,7 +150,7 @@ export class Command implements CommandData {
 
 			let nextArg: string | null = null;
 			if (args.hasIndex(i + 1)) {
-				nextArg = args[i + 1];
+				nextArg = args[i + 1]!;
 			}
 
 			const nextArgNumeric = nextArg && getType(nextArg.toInt()) === "number";
@@ -181,7 +181,7 @@ export class Command implements CommandData {
 					return null;
 				}
 
-				options[option.name].push(value.toInt());
+				options[option.name]!.push(value.toInt());
 				args.remove(i);
 				continue;
 			}
@@ -198,7 +198,7 @@ export class Command implements CommandData {
 				if (!option) continue;
 
 				if (!options.hasIndex(option.name)) options[option.name] = [];
-				options[option.name].push("");
+				options[option.name]!.push("");
 				found = true;
 			}
 
@@ -214,14 +214,14 @@ export class Command implements CommandData {
 
 		for (const arg of this.arguments) {
 			let text = arg.name.upper();
-			if (!arg.hasIndex("required") || !arg.required) {
+			if (!arg.required) {
 				text = `[${text}]`;
 			}
 			else {
 				text = `(${text})`;
 			}
 
-			if (arg.hasIndex("rest") && arg.rest) {
+			if (arg.rest) {
 				text += "...";
 			}
 
@@ -280,17 +280,17 @@ export class Command implements CommandData {
 
 	private getOptionForFlag(flag: string): Required<CommandOption> | null {
 		if (flag.indexOf("=") != null) {
-			flag = flag.split("=")[0];
+			flag = flag.split("=")[0]!;
 		}
 
 		for (const option of this.options) {
 			if (option.flags.indexOf(flag) === null) continue;
 
 			let overrideArgs = false;
-			if (option.hasIndex("overrideArgs")) overrideArgs = option.overrideArgs!;
-
 			let type: CommandOption["type"] = "boolean";
-			if (option.hasIndex("type")) type = option.type!;
+
+			if (option.overrideArgs) overrideArgs = option.overrideArgs;
+			if (option.type) type = option.type;
 
 			return {
 				name: option.name,
@@ -304,19 +304,25 @@ export class Command implements CommandData {
 		return null;
 	}
 
-	private fill(data: CommandData): Required<CommandData> {
-		if (!data.hasIndex("options")) data.options = [];
-		if (!data.hasIndex("arguments")) data.arguments = [];
-		if (!data.hasIndex("subcommands")) data.subcommands = [];
+	private fill(data: CommandData): CommandData {
+		if (!data.options) data.options = [];
+		if (!data.arguments) data.arguments = [];
+		if (!data.subcommands) data.subcommands = [];
 
-		for (const subcommandData of data.subcommands! as CommandData[]) {
-			subcommandData.category = data.category;
-
-			const subcommand = new Command(subcommandData);
+		for (const subcommandData of data.subcommands) {
+			const full = this.fillSubCommandData(subcommandData, data);
+			const subcommand = new Command(full);
 			subcommand.fullName = `${this.fullName} ${subcommand.name}`;
 			this.subcommands.push(subcommand);
 		}
 
-		return data as Required<CommandData>;
+		return data;
+	}
+
+	private fillSubCommandData(subData: SubcommandData, data: CommandData): CommandData {
+		const out = Object.assign(subData, { 
+			category: data.category 
+		});
+		return out;
 	}
 }

@@ -1,3 +1,4 @@
+import { Libex } from "../utils/libex";
 import { resolvePath } from "../utils/libokka";
 
 export class Session {
@@ -29,9 +30,9 @@ export class Session {
 			this.type = "computer";
 		}
 
-		this.publicIp = this.computer!.publicIp;
-		this.localIp = this.computer!.localIp;
-		this.user = "";
+		this.publicIp = this.computer.publicIp;
+		this.localIp = this.computer.localIp;
+		this.user = Libex.computerPrivileges(this.computer);
 		this.isHome = isHome;
 		this.isRshellClient = isRshellClient;
 		this.isProxy = isProxy;

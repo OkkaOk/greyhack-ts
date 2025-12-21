@@ -27,6 +27,10 @@ String.prototype.padLeft = function (count, padChar = " ") {
 	return padChar.repeatSelf(count) + this;
 };
 
+String.prototype.padRight = function (count, padChar = " ") {
+	return this + padChar.repeatSelf(count);
+};
+
 String.prototype.repeatSelf = function (count) {
 	if (count <= 0) return "";
 	let thisString = this as string;
@@ -131,5 +135,7 @@ export function resolvePath(basePath: string, relativePath?: string) {
 }
 
 export function baseName(path: string) {
-	return path.split("/")[-1];
+	const parts =  path.split("/");
+	if (!parts.length) return "";
+	return parts[-1]!;
 }

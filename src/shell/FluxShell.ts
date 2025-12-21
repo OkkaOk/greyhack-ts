@@ -1,4 +1,4 @@
-import type { GCOType, Pipeline } from "../types/core";
+import type { FluxShellGCO, GCOType, Pipeline } from "../types/core";
 import { resolvePath } from "../utils/libokka";
 import { Command } from "./Command";
 import { Process } from "./Process";
@@ -19,16 +19,16 @@ print = (value: any, replaceText = false) => {
 	const gco = getCustomObject<GCOType>();
 	let fd = 1;
 
-	if (gco.hasIndex("fluxShell") && gco["fluxShell"].hasIndex("activeProcesses")) {
+	if (gco.fluxShell && gco.fluxShell.activeProcesses) {
 		// A bit spaghetti
 		if (value.indexOf("<color=red>") == 0) {
 			fd = 2;
 			value = value.replace("<\/?color[^>]*>", "");
 		}
 
-		if (replaceText) gco["fluxShell"].activeProcesses[-1].flush(fd);
+		if (replaceText) gco.fluxShell.activeProcesses[-1]!.flush(fd);
 
-		gco["fluxShell"].activeProcesses[-1].write(fd, value);
+		gco.fluxShell.activeProcesses[-1]!.write(fd, value);
 	}
 	else {
 		raw_print(value, replaceText);
@@ -52,15 +52,23 @@ type ExtToken = {
 };
 
 export class FluxShell {
-	static raw: GCOType["fluxShell"];
+	static raw: FluxShellGCO;
+
+	static get mainProcess(): Process {
+		return this.raw.activeProcesses[0]!;
+	}
+
+	static get currProcess(): Process {
+		return this.raw.activeProcesses[-1]!;
+	}
 
 	static initialize() {
 		this.raw = this.initializeGCO();
 	}
 
-	static initializeGCO(): GCOType["fluxShell"] {
+	static initializeGCO(): FluxShellGCO {
 		const gco = getCustomObject<GCOType>();
-		if (gco.hasIndex("fluxShell")) {
+		if (gco.fluxShell) {
 			return gco.fluxShell;
 		}
 
@@ -86,8 +94,8 @@ export class FluxShell {
 
 		function printErr() {
 			let color = "red";
-			if (gco.fluxShell.settings.hasIndex("errorColor")) {
-				color = gco.fluxShell.settings.errorColor;
+			if (gco.fluxShell!.settings.hasIndex("errorColor")) {
+				color = gco.fluxShell!.settings.errorColor;
 			}
 
 			const lines = FluxShell.mainProcess().read(2);
@@ -104,14 +112,6 @@ export class FluxShell {
 		this.raw = gco.fluxShell;
 
 		return gco.fluxShell;
-	}
-
-	static mainProcess() {
-		return this.raw.activeProcesses[0];
-	}
-
-	static currProcess() {
-		return this.raw.activeProcesses[-1];
 	}
 
 	static expandVariables(input: string): string {
@@ -281,10 +281,10 @@ export class FluxShell {
 			let comp: GreyHack.Computer = getShell().hostComputer;
 			let currPath = currentPath();
 
-			if (this.raw.hasIndex("core")) {
-				shell = this.raw.core!.currSession().shell;
-				comp = this.raw.core!.currSession().computer;
-				currPath = this.raw.core!.currSession().workingDir;
+			if (this.raw.core) {
+				shell = this.raw.core.currSession().shell;
+				comp = this.raw.core.currSession().computer;
+				currPath = this.raw.core.currSession().workingDir;
 			}
 
 			let filePath = resolvePath(currPath, commandName);
@@ -310,9 +310,8 @@ export class FluxShell {
 			command.name = file.name!;
 			command.valid = true;
 			command.file = file;
-			command.shell = shell;
 			command.run = function(args, _opts, process) {
-				const result = this.shell!.launch(this.file!.path(), args.join(" "));
+				const result = shell!.launch(file!.path(), args.join(" "));
 				if (isType(result, "string")) {
 					process.write(2, "Failed to launch program: " + result);
 					return EXIT_CODES.GENERAL_ERROR;
@@ -324,7 +323,7 @@ export class FluxShell {
 			return command;
 		}
 
-		let command = this.raw.commands[commandName];
+		let command = this.raw.commands[commandName]!;
 
 		// Get the subcommand if we're using one
 		while (args.length) {
@@ -349,8 +348,8 @@ export class FluxShell {
 		if (!command.requirements) return true;
 
 		let shell: GreyHack.Shell | null = getShell();
-		if (this.raw.hasIndex("core")) {
-			shell = this.raw.core!.currSession().shell;
+		if (this.raw.core) {
+			shell = this.raw.core.currSession().shell;
 		}
 
 		for (const reqName of command.requirements.indexes() as (keyof typeof command.requirements)[]) {
@@ -365,39 +364,39 @@ export class FluxShell {
 
 	static runCommand(command: Command, args: string[], child: Process): number {
 		if (!command.valid) {
-			child.parent!.write(1, "Unknown command: " + command.name);
+			child.parent.write(1, "Unknown command: " + command.name);
 			return EXIT_CODES.CMD_NOT_FOUND;
 		}
 
 		if (!command.isFluxCommand) {
 			let shell: GreyHack.Shell | null = getShell();
-			if (this.raw.hasIndex("core")) {
-				shell = this.raw.core!.currSession().shell;
+			if (this.raw.core) {
+				shell = this.raw.core.currSession().shell;
 			}
 
 			if (!shell) {
-				child.parent!.write(2, "This isn't an shell session so you can't execute programs that are on the computer.");
+				child.parent.write(2, "This isn't an shell session so you can't execute programs that are on the computer.");
 				return EXIT_CODES.MISUSE;
 			}
 
 			if (!command.file!.isBinary()) {
-				child.parent?.write(2, command.file?.path() + " is not an executable file.");
+				child.parent.write(2, command.file?.path() + " is not an executable file.");
 				return EXIT_CODES.CMD_NOT_EXECUTABLE;
 			}
 
 			if (!command.file!.hasPermission("x")) {
-				child.parent?.write(2, command.file?.path() + " is not an executable file.");
+				child.parent.write(2, command.file?.path() + " is not an executable file.");
 				return EXIT_CODES.CMD_NOT_EXECUTABLE;
 			}
 
 			if (!command.file!.isBinary()) {
-				child.parent?.write(2, "You don't have permissions to execute that program.");
+				child.parent.write(2, "You don't have permissions to execute that program.");
 				return EXIT_CODES.MISUSE;
 			}
 
-			if (this.raw.hasIndex("core") && !this.raw.core!.raw.nonFluxWarned) {
-				child.parent?.write(1, "<color=yellow>This command/binary is not a <b>Flux</b> command and won't have benefits suchs as piping and redirecting (though xargs should still work).")
-				this.raw.core!.raw.nonFluxWarned = true
+			if (this.raw.core && !this.raw.core.raw.nonFluxWarned) {
+				child.parent.write(1, "<color=yellow>This command/binary is not a <b>Flux</b> command and won't have benefits suchs as piping and redirecting (though xargs should still work).")
+				this.raw.core.raw.nonFluxWarned = true
 			}
 
 			return command.run!(args, {}, child.parent!);
@@ -417,7 +416,7 @@ export class FluxShell {
 			return EXIT_CODES.GENERAL_ERROR;
 		}
 
-		const overrideArgs = options.hasIndex("overrideArgs") && options["overrideArgs"][0];
+		const overrideArgs = Object.hasOwn(options, "overrideArgs");
 		
 		if (args.length < command.requiredArgCount && !overrideArgs && !command.acceptsStdin) {
 			child.write(2, `Not enough arguments. Requires ${command.requiredArgCount}, received ${args.length}`);
@@ -459,24 +458,24 @@ export class FluxShell {
 		const expandedTokens: Record<string, boolean> = {};
 
 		// Recursively do alias expansion for the first token in the pipeline
-		let firstToken = pipeline.tokens[0]
+		let firstToken = pipeline.tokens[0]!
 		while (this.raw.aliases.hasIndex(firstToken) && !expandedTokens.hasIndex(firstToken)) {
-			const aliasTokens = this.tokenize(this.raw.aliases[firstToken])
+			const aliasTokens = this.tokenize(this.raw.aliases[firstToken]!)
 			pipeline.tokens = aliasTokens.concat(slice(pipeline.tokens, 1));
 			expandedTokens[firstToken] = true;
-			firstToken = pipeline.tokens[0];
+			firstToken = pipeline.tokens[0]!;
 		}
 
 		for (let i = 0; i < pipeline.tokens.length; i++) {
-			const token = pipeline.tokens[i];
+			const token = pipeline.tokens[i]!;
 			let nextToken: string | null = null;
 			if (i + 1 < pipeline.tokens.length)
-				nextToken = pipeline.tokens[i + 1];
+				nextToken = pipeline.tokens[i + 1]!;
 
 			let newFd: string | number = "";
-			if (token.isMatch("^\d?>>$")) newFd = token.split(">>")[0].toInt();
-			if (isType(newFd, "string") && token.isMatch("^\d?>$")) newFd = token.split(">")[0].toInt();
-			if (isType(newFd, "string") && token.isMatch("^\d?>&\d$")) newFd = token.split(">&")[0].toInt();
+			if (token.isMatch("^\d?>>$")) newFd = token.split(">>")[0]!.toInt();
+			if (isType(newFd, "string") && token.isMatch("^\d?>$")) newFd = token.split(">")[0]!.toInt();
+			if (isType(newFd, "string") && token.isMatch("^\d?>&\d$")) newFd = token.split(">&")[0]!.toInt();
 			if (isType(newFd, "string")) newFd = 1;
 
 			// TODO: Refactor
@@ -489,7 +488,7 @@ export class FluxShell {
 					continue;
 				}
 
-				currStage.process.resources[fd].flush(); // Truncate
+				currStage.process.flush(fd); // Truncate
 				currStage.process.dup(fd, 1);
 				currStage.process.dup(fd, 2);
 			}
@@ -502,13 +501,13 @@ export class FluxShell {
 					continue;
 				}
 
-				currStage.process.resources[fd].flush() // Truncate
+				currStage.process.flush(fd); // Truncate
 				currStage.process.dup(fd, 1)
 				currStage.process.dup(fd, 2)
 			}
 			// Handle fd>&fd (e.g. 2>&1)
 			else if (token.isMatch("^\d?>&\d$")) {
-				let oldFd = token.split(">&")[1].toInt();
+				let oldFd = token.split(">&")[1]!.toInt();
 				if (isType(oldFd, "string")) oldFd = 1;
 
 				const res = currStage.process.dup(oldFd, newFd);
@@ -534,7 +533,7 @@ export class FluxShell {
 					continue;
 				}
 
-				currStage.process.resources[fd].flush();
+				currStage.process.flush(fd);
 				currStage.process.dup(fd, newFd);
 			}
 			// Handle heredoc: << delimiter
@@ -634,7 +633,7 @@ export class FluxShell {
 
 	static executePipeline() {
 		while (this.raw.pipelines.length) {
-			const pipeline = this.raw.pipelines[0];
+			const pipeline = this.raw.pipelines[0]!;
 
 			// There was a pipeline before this (separated by ; || &&)
 			if (this.raw.prevPipeline) {
@@ -659,7 +658,7 @@ export class FluxShell {
 					continue;
 				}
 
-				const commandName = stage.tokens[0];
+				const commandName = stage.tokens[0]!;
 				const commandArgs = slice(stage.tokens, 1);
 				const command = this.getCommand(commandName, commandArgs);
 
@@ -671,7 +670,7 @@ export class FluxShell {
 			// The only scenario where the id differs is that if one of the commands in the pipeline
 			// launched another instance of this script (e.g. hop sessions) and the new instance picked up
 			// the remaining pipeline
-			if (pipeline.id === this.raw.pipelines[0].id) {
+			if (pipeline.id === this.raw.pipelines[0]!.id) {
 				this.raw.prevPipeline = this.raw.pipelines.pull();
 			}
 		}
@@ -697,19 +696,19 @@ export class FluxShell {
 			let color = "#7fff00";
 			let message = "<b><color=%s>%s</color>:<color=#28A9DB>%s</color>$ ".format(color, user, currPath);
 
-			if (this.raw.hasIndex("core")) {
-				const session = this.raw.core!.currSession();
+			if (this.raw.core) {
+				const session = this.raw.core.currSession();
 				user = session.user;
 
 				if (session.isProxy) {
 					color = "#00FFFF";
 				}
-				else if (session.publicIp != this.raw.core!.raw.sessionPath[0].publicIp) {
+				else if (session.publicIp != this.raw.core.raw.sessionPath[0]!.publicIp) {
 					color = "#FF8800";
 				}
 
 				currPath = session.workingDir.replace(session.homeDir(), "~");
-				message = "<b><color=%s>#%d %s@%s</color>:<color=#28A9DB>%s</color>$ ".format(color, this.raw.core!.raw.sessionPath.length, user, session.localIp, currPath);
+				message = "<b><color=%s>#%d %s@%s</color>:<color=#28A9DB>%s</color>$ ".format(color, this.raw.core.raw.sessionPath.length, user, session.localIp, currPath);
 			}
 
 			this.raw.env["USER"] = user;
@@ -717,8 +716,8 @@ export class FluxShell {
 			const input = userInput(message, false, false, true);
 			this.handleInput(input);
 			
-			if (this.raw.hasIndex("core")) {
-				this.raw.core!.raw.database.save();
+			if (this.raw.core) {
+				this.raw.core.raw.database.save();
 			}
 
 			this.raw.history.push(input);

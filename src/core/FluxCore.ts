@@ -1,5 +1,6 @@
 import { FluxShell } from "../shell/FluxShell";
 import type { FluxCoreGCO, FluxShellGCO, GCOType } from "../types/core";
+import { Libex } from "../utils/libex";
 import { GreyDB } from "./GreyDB";
 import { Session } from "./Session";
 
@@ -7,8 +8,8 @@ export class FluxCore {
 	static raw: FluxCoreGCO & FluxShellGCO;
 
 	static initialize() {
-		globals.wasInitialized = getCustomObject<GCOType>().hasIndex("fluxCore");
-		if (!globals.wasInitialized) {
+		globals["wasInitialized"] = getCustomObject<GCOType>().hasIndex("fluxCore");
+		if (!globals["wasInitialized"]) {
 			this.checkCredentials();
 			if (!params.length) this.printArt();
 		}
@@ -21,40 +22,48 @@ export class FluxCore {
 
 	static initializeGCO(): typeof this.raw {
 		const gco = getCustomObject<GCOType>();
-		if (gco.hasIndex("fluxCore")) {
+		if (gco.fluxCore) {
 			return Object.assign(gco.fluxCore, gco.fluxShell);
 		}
-
-		gco.fluxCore = {} as any;
-		const gcof = gco.fluxCore;
-		const gcosh = FluxShell.initializeGCO();
-		gcosh.core = this;
-
-		gcof.database = new GreyDB();
-		if (params.length) gcof.database.logLevel = 1;
-		gcof.database.login("okka", "kukka");
-
-		gcof.database.addTable("hashes", ["hash", "plain"], false, "hash");
 
 		const session = new Session(getShell(), true, false, false);
 		session.workingDir = currentPath();
 
-		gcof.currentCtf = null;
-		gcof.nonFluxWarned = false;
-		gcof.crawlPublicIp = "";
-		gcof.data = {};
-		gcof.sessions = { [session.id]: session };
-		gcof.sessionPath = [session];
-		gcof.visitedDevices = [];
+		gco.fluxCore = {
+			database: new GreyDB(),
+			sessions: { [session.id]: session },
+			sessionPath: [session],
+			data: {},
+			visitedDevices: [],
+			crawlPublicIp: "",
+			currentCtf: null,
+			nonFluxWarned: false,
+			exiting: false,
+		};
+
+		const gcof = gco.fluxCore;
+		const gcosh = FluxShell.initializeGCO();
+		gcosh.core = this;
+
+		if (params.length) gcof.database.logLevel = 1;
+		gcof.database.login("okka", "kukka");
+
+		gcof.database.addTable("hashes", "hash");
+		gcof.database.addTable("vulns");
+		gcof.database.addTable("devices");
+		gcof.database.addTable("settings");
+		gcof.database.addTable("aliases", "key");
+		gcof.database.addTable("env");
+		gcof.database.addTable("secrets");
 
 		// Load aliases
 		for (const obj of gcof.database.fetch("aliases", {})) {
-			gcosh.aliases[obj.alias] = obj.ref;
+			gcosh.aliases[obj.key] = obj.value;
 		}
 
 		// Load env variables
 		for (const obj of gcof.database.fetch("env", {})) {
-			gcosh.aliases[obj.varName] = obj.value;
+			gcosh.env[obj.key] = obj.value;
 		}
 
 		gcosh.env["PWD"] = session.workingDir;
@@ -63,7 +72,17 @@ export class FluxCore {
 		if (!globals.hasIndex("IS_GREYBEL")) {
 			if (!gcosh.env.hasIndex("HACKSHOP_IP") && session.computer.isNetworkActive()) {
 				print("Fetching hackshop ip...");
-				// TODO: finish
+				let ip = Libex.getIpWithPortOpen(1542);
+
+				if (!isValidIp(ip)) {
+					print("Failed to get it automatically in a timely manner");
+					ip = userInput("Enter hackshop ip > ");
+				}
+
+				if (isValidIp(ip)) {
+					gcosh.env["HACKSHOP_IP"] = ip;
+					gcof.database.insert("env", { key: "HACKSHOP_IP", value: ip });
+				}
 			}
 		}
 		else {
@@ -72,16 +91,16 @@ export class FluxCore {
 
 		// Load settings
 		const defaultSettings = this.getDefaultSettings();
-		let settings = gcof.database.fetchOne("settings");
+		let settings = gcof.database.fetchOne("settings") as Partial<typeof defaultSettings>;
 
 		if (!settings) {
 			settings = defaultSettings;
-			gcof.database.insert("settings", settings);
+			gcof.database.insert("settings", defaultSettings);
 		}
 
-		for (const settingKey of defaultSettings.indexes() as (keyof typeof defaultSettings)[]) {
+		for (const settingKey of defaultSettings.indexes() as (keyof typeof settings)[]) {
 			if (!settings.hasIndex(settingKey)) {
-				settings[settingKey] = defaultSettings[settingKey];
+				settings[settingKey] = defaultSettings[settingKey] as any;
 				gcof.database.modified = true;
 			}
 
@@ -102,7 +121,7 @@ export class FluxCore {
 	}
 
 	static currSession(): Session {
-		return this.raw.sessionPath[-1];
+		return this.raw.sessionPath[-1]!;
 	}
 
 	static getSessions(): Session[] {
@@ -110,7 +129,7 @@ export class FluxCore {
 	}
 
 	static getSession(publicIp?: string, localIp?: string, user?: string, type?: string, id?: string): Session | null {
-		if (id && this.raw.sessions.hasIndex(id)) return this.raw.sessions[id];
+		if (id && this.raw.sessions.hasIndex(id)) return this.raw.sessions[id]!;
 
 		for (const session of this.getSessions()) {
 			if (publicIp && publicIp != session.publicIp) continue;
