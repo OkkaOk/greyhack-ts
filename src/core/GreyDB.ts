@@ -3,13 +3,13 @@ type DBSchema = Record<PropertyKey, Record<string, any>>;
 type QueryOperator = "$eq" | "$ne" | "$gt" | "$gte" | "$lt" | "$lte" | "$contains";
 
 type Query<T> = Partial<{
-	[K in keyof T]: T[K] | { [OP in QueryOperator]: T[K] };
+	[K in keyof T]: T[K] | { [OP in QueryOperator]?: T[K] };
 }>;
 
-interface DBTableType<T> {
+interface DBTableType {
 	name: PropertyKey;
-	rows: T[];
-	primaryKey?: keyof T;
+	rows: any[];
+	primaryKey?: PropertyKey;
 }
 
 class DBHelper {
@@ -17,21 +17,51 @@ class DBHelper {
 		for (const key of query.indexes() as string[]) {
 			if (!row.hasIndex(key)) return false;
 			const value = row[key];
-			const qvalue = query[key];
+			const qvalue = query[key] as string | { [OP in QueryOperator]?: any };
 
-			if (!isType(value, "map")) {
-				if (value != query[key]) return false;
+			if (!isType(qvalue, "map")) {
+				if (value != qvalue) return false;
 				continue;
 			}
 
-			for (const comparison of query[key].indexes()) {
-
+			for (const op of Object.keys(qvalue)) {
+				if (op === "$ne" && value === qvalue[op]) return false;
+				if (op === "$eq" && value !== qvalue[op]) return false;
+				if (op === "$gt" && value <= qvalue[op]) return false;
+				if (op === "$gte" && value < qvalue[op]) return false;
+				if (op === "$lt" && value >= qvalue[op]) return false;
+				if (op === "$lte" && value > qvalue[op]) return false;
+				if (op === "$contains" && (value as object).indexOf(qvalue[op]) === null) return false;
 			}
 		}
+
 		return true;
 	}
 
-	static createSource(computer: Computer, randomName: string, folder: string, contentLines: string[], out: GreyHack.File[]) {
+	static createSource(computer: Computer, randomName: string, folder: string, contentLines: string[], out: GreyHack.File[]): boolean {
+		if (!contentLines.length) return true;
+
+		const content = contentLines.join(char(10));
+		const fileName = `${randomName}-bucket-${str(out.length)}.src`;
+
+		let res: any = computer.touch(folder, fileName);
+		if (isType(res, "string")) {
+			print(`<color=red>Failed to create source file: ${res}`);
+			return false;
+		}
+
+		const srcFile = computer.file(`${folder}/${fileName}`)!;
+		res = srcFile.setContent(content);
+		if (isType(res, "string")) {
+			print(`<color=red>Failed to set source file content: ${res}`);
+			return false;
+		}
+
+		out.push(srcFile);
+		return true;
+	}
+
+	static handleMigrations(gco: any) {
 
 	}
 }
@@ -46,16 +76,16 @@ if md5(obj.owner.name + obj.owner.password_hash) != token then
 	exit(""<color=red>Invalid password!"")
 end if`;
 
-class DBTable<T> implements DBTableType<T> {
+class DBTable implements DBTableType {
 	classID = "dbtable";
 	name: PropertyKey;
-	rows: T[];
+	rows: any[];
 	funcs: (() => string[])[];
-	kIndex: Record<keyof T, Record<any, number[]>>;
-	primaryKey?: keyof T;
+	kIndex: Record<PropertyKey, Record<any, number[]>>;
+	primaryKey?: PropertyKey;
 	temporary = false;
 
-	constructor(name: PropertyKey, primaryKey?: keyof T) {
+	constructor(name: PropertyKey, primaryKey?: PropertyKey) {
 		this.name = name;
 		this.rows = [];
 		this.funcs = [];
@@ -63,20 +93,44 @@ class DBTable<T> implements DBTableType<T> {
 		this.kIndex = {} as any;
 	}
 
-	initIndexes() {
+	setIndex(row: any, index: number) {
+		for (const key of Object.keys(row)) {
+			if (!this.kIndex[key]) this.kIndex[key] = {};
 
+			if (!this.kIndex[key][row[key]])
+				this.kIndex[key][row[key]] = [];
+
+			this.kIndex[key][row[key]]!.push(index);
+		}
 	}
 
-	setIndex(row: T, index: number) {
+	calculateIndexes(): boolean {
+		this.kIndex = {};
 
+		for (let i = 0; i < this.rows.length; i++) {
+			this.setIndex(this.rows[i], i);
+		}
+
+		return true;
 	}
 
-	calculateIndexes() {
+	/** Gets the indexes for the rows that match the query */
+	getRowIndexes(query: Query<any>): number[] {
+		if (!this.rows.length) return [];
 
-	}
+		for (const key of Object.keys(query)) {
+			if (!this.kIndex[key]) continue;
 
-	getRowIndexes(query: Query<T>): number[] {
-		return [];
+			const colValueIndexes = this.kIndex[key];
+			const value = query[key];
+
+			if (colValueIndexes[value]) {
+				return colValueIndexes[value];
+			}
+		}
+
+		// No indexes found, return all indexes
+		return range(0, this.rows.length - 1);
 	}
 }
 
@@ -85,7 +139,7 @@ export class GreyDB<Schema extends DBSchema> {
 	shell: GreyHack.Shell;
 	folder = "/home/guest/database";
 	logLevel = 3;
-	tables: Record<keyof Schema, DBTable<any>>;
+	tables: Record<keyof Schema, DBTable>;
 	owner: { name: string; passwordHash: string; };
 
 	modified = false;
@@ -111,7 +165,6 @@ export class GreyDB<Schema extends DBSchema> {
 
 		if (this.tables.hasIndex(tableName)) {
 			this.tables[tableName].primaryKey = primaryKey;
-			this.tables[tableName].initIndexes();
 			this.modified = true;
 			return true;
 		}
@@ -119,7 +172,6 @@ export class GreyDB<Schema extends DBSchema> {
 		const newTable = new DBTable(name, primaryKey);
 		this.modified = true;
 		this.tables[tableName] = newTable;
-		this.tables[tableName].initIndexes();
 
 		return true;
 	}
@@ -130,15 +182,6 @@ export class GreyDB<Schema extends DBSchema> {
 		this.modified = true;
 		this.tables.remove(tableName);
 		return true;
-	}
-
-	getTable<Name extends keyof Schema>(tableName: Name): DBTable<Schema[Name]> | null {
-		if (!this.tables.hasIndex(tableName)) {
-			this.print(`<color=red>Table ${tableName as string} not found`, 1);
-			return null;
-		}
-
-		return this.tables[tableName];
 	}
 
 	insertRaw<Name extends keyof Schema>(tableName: Name, row: any) {
@@ -171,8 +214,9 @@ export class GreyDB<Schema extends DBSchema> {
 	}
 
 	fetch<Name extends keyof Schema>(tableName: Name, query?: Query<Schema[Name]>, limit?: number): Schema[Name][] {
-		const table = this.getTable(tableName);
-		if (!table) return [];
+		if (!Object.hasOwn(this.tables, tableName)) return [];
+
+		const table = this.tables[tableName];
 		if (limit && limit <= 0) return [];
 
 		if (!query) query = {};
@@ -263,7 +307,7 @@ export class GreyDB<Schema extends DBSchema> {
 		let srcFileContent: string[] = [];
 		const srcFiles: GreyHack.File[] = [];
 
-		for (const table of this.tables.values() as DBTable<any>[]) {
+		for (const table of this.tables.values() as DBTable[]) {
 			if (table.temporary) continue;
 
 			srcFileContent.push(`obj.tables["""+table.name+"""] = {}`);
@@ -275,7 +319,7 @@ export class GreyDB<Schema extends DBSchema> {
 				srcFileContent.push(`t.primaryKey = ""${table.primaryKey as string}""`);
 			}
 
-			const arr: DBTable<any>[][] = [table.rows];
+			const arr: DBTable[][] = [table.rows];
 			while (arr.length > 0) {
 				const currArr = arr.pull();
 				if (!currArr.length) continue;
@@ -304,7 +348,7 @@ export class GreyDB<Schema extends DBSchema> {
 			`obj.owner = ${this.owner}`,
 			`obj.version = ${dbVersion}`,
 			binaryCode
-		].join(char(10)))
+		].join(char(10)));
 
 		for (const _srcFile of srcFiles) {
 			finalFileContent.push(`import_code("""+_srcFile.path()+""")`);

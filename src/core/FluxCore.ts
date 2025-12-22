@@ -7,6 +7,10 @@ import { Session } from "./Session";
 export class FluxCore {
 	static raw: FluxCoreGCO & FluxShellGCO;
 
+	static currSession(): Session {
+		return this.raw.sessionPath[-1]!;
+	}
+
 	static initialize() {
 		globals["wasInitialized"] = getCustomObject<GCOType>().hasIndex("fluxCore");
 		if (!globals["wasInitialized"]) {
@@ -118,10 +122,6 @@ export class FluxCore {
 			"errorColor": "#FF0000",
 			"killWorseSessions": true,
 		};
-	}
-
-	static currSession(): Session {
-		return this.raw.sessionPath[-1]!;
 	}
 
 	static getSessions(): Session[] {

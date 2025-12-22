@@ -1,31 +1,66 @@
-// let asd: string | string[] = rnd() < 0.5 ? "" : [""];
-// asd!.length
+// Regex usage
+// s2.matches(/World/);
+// /World/.test(s2);
 
-type Test = {
-	test?: {
-		text: string
-	}
-	func?: (val: string) => string
-}
+// const obj1 = { a: 1, b: 2 };
 
-const myobj: Test = {
+// const weird = {
+//   len() { return 0; },
+//   length: "oops"
+// };
 
-}
-
-// myobj.test = {
-// 	text: "hello"
+// const s1 = "asdasd"
+// if (typeof s1 === "string") {
+//   s1.length;
 // }
 
-const bb = myobj.test ?? "unknown"
-// let cc = myobj.test || "unknown"
+// const maybe = rnd() < 0.5;
+// const obj = maybe ? { asd: 5 } : {};
+const obj = { mykey: 4 }
 
-let cc = null
-cc ??= "hehe"
+const obj3 = {
+	value: "lolvalue",
+	"0": "This will be replaced",
+	getLen() {
+		return this.value.length;
+	},
+	get test(): string {
+		return this.value;
+	},
+	teeeest: function() {
+		return 5
+	},
+	...obj,
+	...{ asd: 5, ...{ btest: 4 } },
+	// ...(maybe ? { asd: 5, ...{ atest: 4 } } : {}),
+	...[1,2,3],
+};
 
-print(bb)
-print(cc)
+const test1 = { key1: 1 }
+const test2 = { key2: 1 }
+Object.assign(test1, test2)
 
-let arr: string[] = []
-if ("tee" in arr) {
-	arr.tee
-}
+const test = []
+
+// function myExisting(o: any) {
+
+// }
+// myExisting({
+// 	hahaNo() {
+// 		return 6
+// 	},
+// 	hahaStillNo: function() {
+// 		return 6
+// 	}
+// })
+
+// const weirdArr = [
+// 	(() => 5),
+// 	(() => "very weird"),
+// ] as const
+
+const myarr = [1,2,3,4,...[5,6,7,...[8,9,10,11,12,...[13,14,15],16,17]]]
+
+// const res = weirdArr[1]();
+
+print(obj3)

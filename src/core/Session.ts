@@ -1,5 +1,7 @@
+import { FluxShell } from "../shell/FluxShell";
 import { Libex } from "../utils/libex";
-import { resolvePath } from "../utils/libokka";
+import { requireLib, resolvePath } from "../utils/libokka";
+import { FluxCore } from "./FluxCore";
 
 export class Session {
 	classID = "session";
@@ -36,7 +38,7 @@ export class Session {
 		this.isHome = isHome;
 		this.isRshellClient = isRshellClient;
 		this.isProxy = isProxy;
-		this.id = md5(this.publicIp + this.localIp + this.user + this.isHome + this.isProxy + this.isRshellClient)
+		this.id = md5(this.publicIp + this.localIp + this.user + this.isHome + this.isProxy + this.isRshellClient);
 
 		this.workingDir = "/";
 
@@ -49,20 +51,96 @@ export class Session {
 		this.apt = null;
 	}
 
-	switchUser(username: string, password: string) {
+	/** Switches the session's shell to the given user */
+	switchUser(username: string, password: string): boolean {
+		const curr = FluxCore.currSession();
+		if (curr.publicIp === this.publicIp && curr.localIp === this.localIp) {
+			const shell = getShell(username, password);
+			if (!shell) return false;
 
+			this.shell = shell;
+			this.computer = shell.hostComputer;
+			this.user = username;
+			this.userLevel = 1;
+			if (this.user === "root") this.userLevel = 2;
+			return true;
+		}
+
+		// TODO: remote switch user
+		return false;
 	}
 
-	connect(launchParams: string) {
+	connect(launchParams: string): boolean {
+		if (!FluxCore.currSession().shell) {
+			FluxCore.raw.sessionPath.pop();
+		}
 
+		if (!this.shell) {
+			FluxCore.raw.sessionPath.push(this);
+			return true;
+		}
+
+		const success = FluxCore.scpFlux(this.shell, `/home/guest`);
+		if (!success) {
+			print("<color=red>Failed to scp flux to target!</color>");
+			return false;
+		}
+
+		FluxCore.raw.sessionPath.push(this);
+		const res = this.shell.launch(`/home/guest/${programPath().split("/")[-1]}`, launchParams);
+		if (isType(res, "string")) print(res.color("red"));
+		FluxCore.raw.sessionPath.pop();
+
+		if (FluxCore.raw.exiting)
+			exit("");
+		return true;
 	}
 
 	kill(): boolean {
-		return true
+		if (this.isHome) {
+			print("You can't kill your home session!");
+			return false;
+		}
+
+		if (FluxCore.currSession().id === this.id) {
+			print("You can't kill the current session!");
+			return false;
+		}
+
+		if (this.isRshellClient) {
+			const procs = slice(this.computer.showProcs().split(char(10)), 1);
+			for (const item of procs) {
+				const parsedItem = item.split(" ");
+				const pid = parsedItem[1]?.toInt();
+				const name = parsedItem[4];
+				// TODO: check correct user
+
+				if (name != "rshell_client") continue;
+				if (!isType(pid, "number")) {
+					print("<color=red>Failed to close rshell_client: failed to parse the show_procs");
+					continue;
+				}
+
+				const res = this.computer.closeProgram(pid);
+				if (!isType(res, "string")) break;
+
+				print("<color=red>Failed to close rshell_client: " + res);
+			}
+		}
+
+		if (this.apt && FluxShell.raw.env.hasIndex("HACKSHOP_IP")) {
+			this.apt.delRepo(FluxShell.raw.env["HACKSHOP_IP"] as string);
+		}
+
+		FluxCore.raw.sessions.remove(this.id);
+
+		return true;
 	}
 
 	loadLibs() {
-
+		if (!this.apt) this.apt = requireLib("aptclient.so");
+		if (!this.metax) this.metax = requireLib("metaxploit.so");
+		if (!this.crypto) this.crypto = requireLib("crypto.so");
 	}
 
 	resolvePath(path: string) {
