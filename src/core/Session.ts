@@ -70,7 +70,7 @@ export class Session {
 		return false;
 	}
 
-	connect(launchParams: string): boolean {
+	connect(launchParams = ""): boolean {
 		if (!FluxCore.currSession().shell) {
 			FluxCore.raw.sessionPath.pop();
 		}

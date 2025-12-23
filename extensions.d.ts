@@ -6,6 +6,7 @@ interface String {
 	padRight: (count: number, padChar?: string) => string;
 	format: (...formats: (string | number)[]) => string;
 	color: (color: string) => string;
+	removeTags: () => string;
 }
 
 interface Number {

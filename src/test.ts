@@ -2,6 +2,8 @@
 // s2.matches(/World/);
 // /World/.test(s2);
 
+// import * as lib from "./utils/libokka";
+
 // const obj1 = { a: 1, b: 2 };
 
 // const weird = {
@@ -14,33 +16,45 @@
 //   s1.length;
 // }
 
-// const maybe = rnd() < 0.5;
-// const obj = maybe ? { asd: 5 } : {};
-const obj = { mykey: 4 }
+// const obj = { mykey: 4 }
 
-const obj3 = {
-	value: "lolvalue",
-	"0": "This will be replaced",
-	getLen() {
-		return this.value.length;
-	},
-	get test(): string {
-		return this.value;
-	},
-	teeeest: function() {
-		return 5
-	},
-	...obj,
-	...{ asd: 5, ...{ btest: 4 } },
-	// ...(maybe ? { asd: 5, ...{ atest: 4 } } : {}),
-	...[1,2,3],
-};
+// const obj3 = {
+// 	value: "lolvalue",
+// 	"0": "This will be replaced",
+// 	...obj,
+// 	...{ asd: 5, ...{ btest: 4 } },
+// 	// ...(maybe ? { asd: 5, ...{ atest: 4 } } : {}),
+// 	...[1,2,3],
+// 	what: (val: string) => {
+// 		print(val)
+// 	},
+// 	whoo: function() {
+// 		this.btest
+// 	}
+// };
 
-const test1 = { key1: 1 }
-const test2 = { key2: 1 }
-Object.assign(test1, test2)
+// type Person = { name: string, gender: string, age: number }
+// const arr: Person[] = [
+// 	{ name: "kimmo", gender: "male", age: 60 },
+// 	{ name: "ari", gender: "male", age: 58 },
+// 	{ name: "jesus", gender: "male", age: 2025 },
+// 	{ name: "???", gender: "???", age: 10000 }
+// ];
 
-const test = []
+// print(arr.find(person => {
+// 	if (person.name === "kimmo")
+// 		return false;
+// 	if (person.age < 70)
+// 		return false;
+// 	return true;
+// }));
+
+// const res = arr.map((person) => person.name)
+// print(res)
+
+// print(arr.some(person => person.name === "ari"))
+// print(arr.every(person => person.name === "ari"))
+// print(arr.filter(person => person.age > 70))
 
 // function myExisting(o: any) {
 
@@ -59,8 +73,19 @@ const test = []
 // 	(() => "very weird"),
 // ] as const
 
-const myarr = [1,2,3,4,...[5,6,7,...[8,9,10,11,12,...[13,14,15],16,17]]]
+// const myarr = [1,2,3,4,...[5,6,7,...[8,9,10,11,12,...[13,14,15],16,17]]]
 
 // const res = weirdArr[1]();
 
-print(obj3)
+// print(lib.getDeviceId(getShell()))
+
+
+const endI = 5
+for (let i = 0; i < 10; i++) {
+	if (i == 4) continue;
+	print(i)
+}
+
+for (let i = 9; i >= 0; i--) {
+	print(i)
+} 

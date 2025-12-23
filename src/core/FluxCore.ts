@@ -199,7 +199,7 @@ export class FluxCore {
 			targetShell.hostComputer.createFolder(parentPath(folder), folder.split("/")[-1]);
 		}
 
-		const scpResult = this.currSession().shell?.scp(programPath(), folder, targetShell);
+		const scpResult = this.currSession().shell!.scp(programPath(), folder, targetShell);
 		if (getType(scpResult) === "string") {
 			print("<color=red>" + scpResult);
 			return false;
@@ -216,8 +216,21 @@ export class FluxCore {
 		return false;
 	}
 
-	static decipher(hash: string) {
+	static decipher(md5Hash: string): string | null {
+		const row = this.raw.database.fetchOne("hashes", { hash: md5Hash });
+		if (row) return row.plain;
 
+		const cryptoSession = this.raw.sessionPath.find(s => s.crypto !== null);
+		if (!cryptoSession) {
+			print("<color=red>Failed to decipher password as I don't have the crypto library");
+			return null;
+		}
+
+		const plain = cryptoSession.crypto!.decipher(md5Hash);
+		if (!plain) return null;
+
+		this.raw.database.insert("hashes", { hash: md5Hash, plain });
+		return plain;
 	}
 
 	static checkCredentials() {

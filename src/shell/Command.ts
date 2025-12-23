@@ -32,7 +32,7 @@ type CommandArgument = {
 
 type CommandOption = {
 	name: string;
-	flags: string[];
+	flags: [string] | [string, string];
 	description: string;
 	type?: "string" | "number" | "boolean";
 	/** Allow command to bypass arg count requirement */
@@ -62,7 +62,8 @@ export class Command implements CommandData {
 	isFluxCommand: boolean;
 	file: GreyHack.File | null = null;
 
-	run?: (args: string[], options: RunFlags, process: Process) => ExitCodeType
+	run?: (args: string[], options: RunFlags, process: Process) => ExitCodeType;
+	funcs: Record<string, (...params: any[]) => any>;
 
 	constructor(data: CommandData) {
 		this.subcommands = [];
@@ -75,6 +76,7 @@ export class Command implements CommandData {
 		this.arguments = data.arguments!;
 		this.options = data.options!;
 		this.examples = [];
+		this.funcs = {};
 
 		this.requirements = null;
 		if (data.requirements)

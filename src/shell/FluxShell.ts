@@ -399,7 +399,7 @@ export class FluxShell {
 				this.raw.core.raw.nonFluxWarned = true
 			}
 
-			return command.run!(args, {}, child.parent!);
+			return command.run!(args, {}, child.parent);
 		}
 
 		const options = command.extractOptions(args, child);
@@ -424,13 +424,13 @@ export class FluxShell {
 			return EXIT_CODES.MISUSE;
 		}
 
-		if (!command.hasIndex("run")) {
+		if (!command["run"]) {
 			child.write(2, "Command doesn't do anything by itself. Use its subcommands.");
 			return EXIT_CODES.MISUSE;
 		}
 
 		this.raw.activeProcesses.push(child);
-		const exitCode = command.run!(args, options, child);
+		const exitCode = command.run(args, options, child);
 		this.raw.activeProcesses.pop();
 
 		// Closes the file streams if not already done in the command 
@@ -443,7 +443,7 @@ export class FluxShell {
 	}
 
 	static parsePipelineStages(pipeline: Pipeline) {
-		if (!pipeline.tokens.length) return;
+		if (pipeline.stages.length || !pipeline.tokens.length) return;
 
 		function createStage(): Pipeline["stages"][number] {
 			return {
@@ -466,11 +466,11 @@ export class FluxShell {
 			firstToken = pipeline.tokens[0]!;
 		}
 
-		for (let i = 0; i < pipeline.tokens.length; i++) {
-			const token = pipeline.tokens[i]!;
+		while (pipeline.tokens.length) {
+			const token = pipeline.tokens.pull();
 			let nextToken: string | null = null;
-			if (i + 1 < pipeline.tokens.length)
-				nextToken = pipeline.tokens[i + 1]!;
+			if (pipeline.tokens.hasIndex(0))
+				nextToken = pipeline.tokens[0]!;
 
 			let newFd: string | number = "";
 			if (token.isMatch("^\d?>>$")) newFd = token.split(">>")[0]!.toInt();
@@ -494,7 +494,7 @@ export class FluxShell {
 			}
 			// Handle split >& file or &> file
 			else if ((token == ">&" || token == "&>") && nextToken) {
-				i += 1;
+				pipeline.tokens.pull(); // Consume the nextToken
 				const fd = currStage.process.open(nextToken, "w");
 				if (!fd) {
 					currStage.invalid = true;
@@ -515,7 +515,7 @@ export class FluxShell {
 			}
 			// Handle append: fd>> file
 			else if (token.isMatch("^\d?>>$") && nextToken) {
-				i += 1;
+				pipeline.tokens.pull(); // Consume the nextToken
 				const fd = currStage.process.open(nextToken, "rw");
 				if (!fd) {
 					currStage.invalid = true;
@@ -526,7 +526,7 @@ export class FluxShell {
 			}
 			// Handle truncate: fd> file
 			else if (token.isMatch("^\d?>$") && nextToken) {
-				i += 1;
+				pipeline.tokens.pull(); // Consume the nextToken
 				const fd = currStage.process.open(nextToken, "w");
 				if (!fd) {
 					currStage.invalid = true;
@@ -545,11 +545,11 @@ export class FluxShell {
 					input = this.expandVariables(input);
 					currStage.process.write(0, input);
 				}
-				i += 1;
+				pipeline.tokens.pull(); // Consume the nextToken
 			}
 			// Handle input redirection
 			else if (token === "<" && nextToken) {
-				i += i;
+				pipeline.tokens.pull(); // Consume the nextToken
 				const fd = currStage.process.open(nextToken, "r");
 				if (!fd) {
 					currStage.invalid = true;

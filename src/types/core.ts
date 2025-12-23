@@ -3,8 +3,9 @@ import { GreyDB } from "../core/GreyDB";
 import { Session } from "../core/Session";
 import { Command } from "../shell/Command";
 import { Process } from "../shell/Process";
+import type { MetaLibVuln } from "./hacking";
 
-type CollectionData = {
+export type CollectionData = {
 	"mails": Record<string, string>;
 	"users": Record<string, string>;
 	"banks": Record<string, string>;
@@ -15,14 +16,7 @@ type DBSchema = {
 		plain: string;
 		hash: string;
 	};
-	vulns: {
-		library: string;
-		version: string;
-		address: string;
-		type: string;
-		permission: string;
-		hasRequirements: boolean;
-	},
+	vulns: MetaLibVuln,
 	devices: {
 		deviceId?: string;
 		publicIp?: string;

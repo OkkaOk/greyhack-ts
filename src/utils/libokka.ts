@@ -92,6 +92,10 @@ String.prototype.format = function (...formats) {
 	return thisString;
 };
 
+String.prototype.removeTags = function () {
+	return (this as string).replace("<[^>]+>", "");
+};
+
 Number.prototype.toFixed = function (fractionDigits) {
 	const thisNum = this as number;
 	fractionDigits = floor(fractionDigits);
@@ -128,7 +132,7 @@ export function requireLib<Lib extends keyof GreyHack.LibTypes>(libName: Lib): G
 	const currSession = gco.fluxCore.sessionPath[-1]!;
 	if (!currSession.computer.isNetworkActive()) {
 		print(`Failed to load ${libName} and there is no internet connection to download it.`);
-		return null
+		return null;
 	}
 
 	// Try to scp it from existing sessions
@@ -262,4 +266,63 @@ export function getDays(dateStr = ""): number {
 	days += day;
 
 	return round(days);
+}
+
+export function formatColumnsf<T extends boolean>(
+	rows: string[],
+	align: "left" | "center" | "right", 
+	joinLines: T = true as T,
+	replacer?: Record<string, string>,
+	spacing = 1
+): T extends true ? string : string[] {
+	if (!replacer) replacer = {};
+
+	const longestStrings: number[] = [];
+
+	for (const line of rows) {
+		const values = line.removeTags().split(" ");
+
+		for (let i = 0; i < values.length; i++) {
+			if (i >= longestStrings.length) longestStrings.push(0);
+
+			const cleanString = values[i]!;
+			const length = cleanString.length;
+			if (length > longestStrings[i]!) longestStrings[i] = length;
+		}
+	}
+
+	const newLines: string[] = [];
+	for (const line of rows) {
+		const values = line.split(" ");
+
+		for (let i = 0; i < values.length; i++) {
+			const padding = longestStrings[i]! - values[i]!.removeTags().length;
+			if (padding <= 0) continue;
+
+			let paddingLeft = 0;
+			let paddingRight = 0;
+			if (align === "left")
+				paddingRight = padding;
+			else if (align === "right")
+				paddingLeft = padding;
+			else {
+				paddingLeft = floor(padding / 2);
+				paddingRight = floor(padding / 2);
+			}
+
+			values[i] = values[i]!.padLeft(paddingLeft).padRight(paddingRight);
+		}
+		
+		let newLine = values.join(" ".repeatSelf(spacing));
+		for (const key of Object.keys(replacer)) {
+			newLine = newLine.replace(key, replacer[key]!);
+		}
+
+		newLines.push(newLine);
+	}
+
+	if (joinLines)
+		return newLines.join(char(10)) as any;
+
+	return newLines as any;
 }
