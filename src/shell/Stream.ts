@@ -62,7 +62,7 @@ export class Stream {
 	}
 
 	/** Writes data to the stream */
-	write(data: string | Array<string>, omitNewLine?: boolean) {
+	write(data: string | string[], omitNewLine?: boolean) {
 		// I'm not writing to file here because
 		// I think it's going to be pretty heavy so I buffer
 		// it for a while and write it after the command has finished

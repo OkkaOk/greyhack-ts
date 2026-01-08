@@ -79,13 +79,14 @@
 
 // print(lib.getDeviceId(getShell()))
 
+// let tuple: [number, string, boolean] = [7, "hello", true];
+// let [a, b, c] = tuple; // a: number, b: string, c: boolean
 
-const endI = 5
-for (let i = 0; i < 10; i++) {
-	if (i == 4) continue;
-	print(i)
-}
+// let o = {
+//   d: "foo",
+//   e: 12,
+//   f: "bar",
+// };
+// let { d, e } = o;
 
-for (let i = 9; i >= 0; i--) {
-	print(i)
-} 
+print(`<color=#CC00FF>Collecting complete! Obtained ${5 - 3} new sessions.</color>`)

@@ -22,6 +22,54 @@ export class FluxCore {
 		const gcof = this.initializeGCO();
 
 		this.raw = gcof;
+
+		if (!globals["wasInitialized"]) {
+			// Load saved proxies
+			const proxies = gcof.database.fetch("devices", { "isProxy": true });
+			for (const proxy of proxies) {
+				if (!proxy.publicIp) continue;
+				if (!proxy.password) continue;
+
+				const proxyShell = getShell().connectService(proxy.publicIp, 22, "root", proxy.password);
+				if (!isType(proxyShell, "shell")) {
+					print(`<color=red>Failed to connect to saved proxy ${proxy.publicIp}: ${proxyShell}`);
+					continue;
+				}
+
+				const proxySession = new Session(proxyShell, false, false, true);
+				gcof.sessions[proxySession.id] = proxySession;
+				proxySession.connect("quit");
+
+				Libex.corruptLog(proxyShell);
+
+				if (!proxy.isRshellServer || !proxySession.metax) continue;
+
+				const rshells = proxySession.metax.rshellServer();
+				if (isType(rshells, "string")) continue;
+
+				for (const rshell of rshells) {
+					const rshellSession = new Session(rshell, false, true, false);
+					gcof.sessions[rshellSession.id] = rshellSession;
+				}
+			}
+		}
+
+		const currSession = this.currSession();
+		if (currSession.workingDir == "/") {
+			currSession.workingDir = currentPath();
+			FluxShell.raw.env["PWD"] = currSession.workingDir;
+		}
+
+		if (currSession.shell) {
+			currSession.loadLibs();
+		}
+
+		if (currSession.apt && currSession.computer.isNetworkActive()) {
+			if (!currSession.computer.file("/etc/apt/aptcache.bin") && "HACKSHOP_IP" in FluxShell.raw.env) {
+				currSession.apt.addRepo(FluxShell.raw.env["HACKSHOP_IP"] as string);
+				currSession.apt.update();
+			}
+		}
 	}
 
 	static initializeGCO(): typeof this.raw {

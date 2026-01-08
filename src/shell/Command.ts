@@ -43,7 +43,7 @@ type ExitCodeType = typeof EXIT_CODES[keyof typeof EXIT_CODES];
 
 type RunFlags = Record<string, (string | number | boolean)[]>;
 
-export class Command implements CommandData {
+export class Command<T extends object = never> implements CommandData {
 	classID = "command";
 	name: string;
 	fullName: string;
@@ -63,7 +63,7 @@ export class Command implements CommandData {
 	file: GreyHack.File | null = null;
 
 	run?: (args: string[], options: RunFlags, process: Process) => ExitCodeType;
-	funcs: Record<string, (...params: any[]) => any>;
+	funcs: T;
 
 	constructor(data: CommandData) {
 		this.subcommands = [];
@@ -76,7 +76,7 @@ export class Command implements CommandData {
 		this.arguments = data.arguments!;
 		this.options = data.options!;
 		this.examples = [];
-		this.funcs = {};
+		this.funcs = {} as any;
 
 		this.requirements = null;
 		if (data.requirements)

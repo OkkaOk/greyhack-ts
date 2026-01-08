@@ -351,6 +351,8 @@ export class GreyDB<Schema extends DBSchema> {
 		].join(char(10)));
 
 		for (const _srcFile of srcFiles) {
+			// FIXME: some bug in the game causes this to fail at compiling and the work around
+			// would be to import this class' code with import_code.
 			finalFileContent.push(`import_code("""+_srcFile.path()+""")`);
 		}
 

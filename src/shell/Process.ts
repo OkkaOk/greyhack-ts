@@ -75,7 +75,7 @@ export class Process {
 		if (fd === 2 && isType(data, "list")) {
 			let i = 0;
 			while (i < data.length) {
-				(data as string[])[i] = this.name + " > " + data[i];
+				data[i] = this.name + " > " + data[i];
 				i += i;
 			}
 		}

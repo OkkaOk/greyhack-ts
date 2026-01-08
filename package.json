@@ -1,29 +1,28 @@
 {
 	"name": "@grey-ts/template",
 	"version": "0.1.0",
+	"author": "Okka",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/OkkaOk/grey-ts-template.git"
+	},
+	"bugs": {
+		"url": "https://github.com/OkkaOk/grey-ts-template/issues"
+	},
 	"description": "A template to begin writing code for GreyHack in TypeScript",
+	"homepage": "https://github.com/OkkaOk/grey-ts-template#readme",
 	"keywords": [
 		"greyhack",
 		"greyscript",
 		"transpiler"
 	],
-	"homepage": "https://github.com/OkkaOk/grey-ts-template#readme",
-	"bugs": {
-		"url": "https://github.com/OkkaOk/grey-ts-template/issues"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/OkkaOk/grey-ts-template.git"
-	},
 	"license": "MIT",
-	"author": "Okka",
-	"type": "module",
 	"scripts": {
 		"build": "node index.js"
 	},
+	"type": "module",
 	"dependencies": {
 		"@grey-ts/transpiler": "link:@grey-ts/transpiler",
-		"@grey-ts/types": "link:@grey-ts/types",
-		"greybel-js": "^3.7.10"
+		"@grey-ts/types": "link:@grey-ts/types"
 	}
 }

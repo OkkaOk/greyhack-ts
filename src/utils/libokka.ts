@@ -268,13 +268,15 @@ export function getDays(dateStr = ""): number {
 	return round(days);
 }
 
-export function formatColumnsf<T extends boolean>(
+export function formatColumnsf(rows: string[], align: "left" | "center" | "right", joinLines?: false, replacer?: Record<string, string>, spacing?: number): string[];
+export function formatColumnsf(rows: string[], align: "left" | "center" | "right", joinLines: true, replacer?: Record<string, string>, spacing?: number): string;
+export function formatColumnsf(
 	rows: string[],
 	align: "left" | "center" | "right", 
-	joinLines: T = true as T,
+	joinLines?: boolean,
 	replacer?: Record<string, string>,
 	spacing = 1
-): T extends true ? string : string[] {
+): string | string[] {
 	if (!replacer) replacer = {};
 
 	const longestStrings: number[] = [];
@@ -322,7 +324,7 @@ export function formatColumnsf<T extends boolean>(
 	}
 
 	if (joinLines)
-		return newLines.join(char(10)) as any;
+		return newLines.join(char(10));
 
-	return newLines as any;
+	return newLines;
 }
