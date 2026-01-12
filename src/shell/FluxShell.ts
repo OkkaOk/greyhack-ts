@@ -4,6 +4,7 @@ import { Command } from "./Command";
 import { Process } from "./Process";
 
 export const EXIT_CODES = {
+	CMD_EXEC_FAIL: 123,
 	CMD_NOT_EXECUTABLE: 127,
 	CMD_NOT_FOUND: 126,
 	GENERAL_ERROR: 1,

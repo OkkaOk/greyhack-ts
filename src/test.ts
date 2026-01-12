@@ -88,10 +88,15 @@
 //   f: "bar",
 // };
 // let { d, e } = o;
+const myArr = [
+	"ari",
+	"teve",
+	"kimmo"
+]
 
-function deleteFile(arr: any[] | string, arr2?: string[]) {
-	print(arr.length);
-	print(arr2?.length);
-	print(arr2?.["length"]);
-}
-const file = getShell().hostComputer.file("/")!;
+const myObj = {}
+
+print(Object.hasOwn(myObj, "asd"))
+print(myArr.concat(["asd"]))
+print(myArr.map(n => n + n))
+print(Math.min(1,2,3,4))

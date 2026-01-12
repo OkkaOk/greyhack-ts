@@ -61,9 +61,9 @@ class DBHelper {
 		return true;
 	}
 
-	static handleMigrations(gco: any) {
+	// static handleMigrations(gco: any) {
 
-	}
+	// }
 }
 
 const dbVersion = 1;
@@ -155,6 +155,10 @@ export class GreyDB<Schema extends DBSchema> {
 	print(value: any, logLevel: number) {
 		if (this.logLevel < logLevel) return;
 		print(value);
+	}
+
+	hasTable(tableName: string): boolean {
+		return this.tables.hasIndex(tableName)
 	}
 
 	addTable<Name extends keyof Schema>(

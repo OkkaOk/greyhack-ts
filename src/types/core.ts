@@ -11,7 +11,7 @@ export type CollectionData = {
 	"banks": Record<string, string>;
 };
 
-type DBSchema = {
+export type DBSchema = {
 	hashes: {
 		plain: string;
 		hash: string;

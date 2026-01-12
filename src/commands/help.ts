@@ -19,7 +19,7 @@ const command = new Command({
 command.run = function (args, _options, process) {
 	if (args.length) {
 		if (args[0] === "tips") {
-
+			// TODO: this
 		}
 
 		return EXIT_CODES.SUCCESS;
