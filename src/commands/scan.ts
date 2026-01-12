@@ -21,7 +21,7 @@ const command = new Command<Ext>({
 	],
 });
 
-command.funcs.scanLan = function(process) {
+command.funcs.scanLan = function (process) {
 	let mainRouter = getRouter(FluxCore.currSession().publicIp);
 	if (!mainRouter) mainRouter = getRouter();
 	if (!mainRouter) {
@@ -34,7 +34,7 @@ command.funcs.scanLan = function(process) {
 		type: "computer" | "router" | "switch" | "camera";
 		ports: number[];
 		router: GreyHack.Router | null;
-	}
+	};
 
 	function createDevice(deviceIp: string): device {
 		const device: device = {
@@ -42,7 +42,7 @@ command.funcs.scanLan = function(process) {
 			type: "computer",
 			ports: [],
 			router: getRouter(deviceIp)
-		}
+		};
 
 		if (device.router) device.type = "router";
 		if (getSwitch(deviceIp)) device.type = "switch";
@@ -97,7 +97,7 @@ command.funcs.scanLan = function(process) {
 	scanDevice(routerDevice, []);
 
 	return EXIT_CODES.SUCCESS;
-}
+};
 
 command.run = function (args, _options, process) {
 	if (!args.length || args[0] === "lan") {

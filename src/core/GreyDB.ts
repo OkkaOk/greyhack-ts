@@ -69,11 +69,11 @@ class DBHelper {
 const dbVersion = 1;
 const gcoKey = "fpZ1mDjzVhH6IVejN5jf" as const;
 const binaryCode: string = `\
-if params.len == 0 then exit(""<color=red>No params given!"")
+if params.len == 0 then exit("<color=red>No params given!")
 token = params.pull()
 
-if md5(obj.owner.name + obj.owner.password_hash) != token then
-	exit(""<color=red>Invalid password!"")
+if md5(obj.owner.name + obj.owner.passwordHash) != token then
+	exit("<color=red>Invalid password!")
 end if`;
 
 class DBTable implements DBTableType {
@@ -286,7 +286,7 @@ export class GreyDB<Schema extends DBSchema> {
 		const computer = this.shell.hostComputer;
 		const startTime = time();
 
-		const rndName = slice(md5(rnd() + currentDate()), 0, 6);
+		const rndName = slice(md5(Math.random() + currentDate()), 0, 6);
 		const rndSrc = rndName + ".src";
 		const rndFullPath = this.folder + "/" + rndSrc;
 
@@ -310,13 +310,13 @@ export class GreyDB<Schema extends DBSchema> {
 		for (const table of this.tables.values() as DBTable[]) {
 			if (table.temporary) continue;
 
-			srcFileContent.push(`obj.tables["""+table.name+"""] = {}`);
-			srcFileContent.push(`t = obj.tables["""+table.name+"""]`);
+			srcFileContent.push(`obj.tables["${table.name as string}"] = {}`);
+			srcFileContent.push(`t = obj.tables["${table.name as string}"]`);
 			srcFileContent.push(`t.rows = []`);
 			srcFileContent.push(`t.funcs = []`);
 
 			if (table.primaryKey) {
-				srcFileContent.push(`t.primaryKey = ""${table.primaryKey as string}""`);
+				srcFileContent.push(`t.primaryKey = "${table.primaryKey as string}"`);
 			}
 
 			const arr: DBTable[][] = [table.rows];
@@ -326,7 +326,7 @@ export class GreyDB<Schema extends DBSchema> {
 
 				const currArrStr = str(currArr);
 				if (charCount + currArrStr.length > 150000) {
-					const halfway = ceil(currArr.length / 2);
+					const halfway = Math.ceil(currArr.length / 2);
 					arr.push(slice(currArr, 0, halfway));
 					arr.push(slice(currArr, halfway));
 					continue;
@@ -342,8 +342,8 @@ export class GreyDB<Schema extends DBSchema> {
 		DBHelper.createSource(computer, rndName, this.folder, srcFileContent, srcFiles);
 
 		finalFileContent.push([
-			`get_custom_object["""+gcoKey+"""] = {}`,
-			`obj = get_custom_object["""+gcoKey+"""]`,
+			`get_custom_object["${gcoKey}"] = {}`,
+			`obj = get_custom_object["${gcoKey}"]`,
 			"obj.tables = {}",
 			`obj.owner = ${this.owner}`,
 			`obj.version = ${dbVersion}`,
@@ -351,9 +351,10 @@ export class GreyDB<Schema extends DBSchema> {
 		].join(char(10)));
 
 		for (const _srcFile of srcFiles) {
-			// FIXME: some bug in the game causes this to fail at compiling and the work around
-			// would be to import this class' code with import_code.
-			finalFileContent.push(`import_code("""+_srcFile.path()+""")`);
+			// Some bug in the game causes this to fail because it statically tries to import code there even though it's a string literal and not a call
+			// This is a workaround which tricks it not to call it during compile
+			const importCodeStr = "import" + "_" + "code";
+			finalFileContent.push(`${importCodeStr}("${_srcFile.path()}")`);
 		}
 
 		finalFile.setContent(finalFileContent.join(char(10)));
@@ -378,7 +379,7 @@ export class GreyDB<Schema extends DBSchema> {
 			srcFile.delete();
 		}
 
-		const tookMs = round((time() - startTime) * 1000);
+		const tookMs = Math.round((time() - startTime) * 1000);
 		if (tookMs > 600) {
 			this.print(`<color=yellow>Warning: Saving the database took ${tookMs} ms. Consider using another account to lessen the load`, 2);
 		}
@@ -508,7 +509,7 @@ export class GreyDB<Schema extends DBSchema> {
 
 		getCustomObject().remove(gcoKey);
 
-		const tookMs = round((time() - startTime) * 1000);
+		const tookMs = Math.round((time() - startTime) * 1000);
 		if (tookMs > 2000) {
 			this.print(`<color=yellow>Warning: Loading the database took ${tookMs} ms. Consider using another account to lessen the load`, 2);
 		}

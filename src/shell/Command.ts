@@ -1,3 +1,4 @@
+import type { GCOType } from "../types/core";
 import { EXIT_CODES } from "./FluxShell";
 import type { Process } from "./Process";
 
@@ -39,11 +40,11 @@ type CommandOption = {
 	overrideArgs?: boolean;
 };
 
-type ExitCodeType = typeof EXIT_CODES[keyof typeof EXIT_CODES];
+export type ExitCodeType = typeof EXIT_CODES[keyof typeof EXIT_CODES];
 
 type RunFlags = Record<string, (string | number | boolean)[]>;
 
-export class Command<T extends object = never> implements CommandData {
+export class Command<T extends object = any> implements CommandData {
 	classID = "command";
 	name: string;
 	fullName: string;
@@ -65,12 +66,12 @@ export class Command<T extends object = never> implements CommandData {
 	run?: (args: string[], options: RunFlags, process: Process) => ExitCodeType;
 	funcs: T;
 
-	constructor(data: CommandData) {
+	constructor(data: CommandData, fullName?: string) {
 		this.subcommands = [];
 		data = this.fill(data);
 
 		this.name = data.name;
-		this.fullName = data.name;
+		this.fullName = fullName ?? data.name;
 		this.description = data.description;
 		this.category = data.category;
 		this.arguments = data.arguments!;
@@ -122,9 +123,11 @@ export class Command<T extends object = never> implements CommandData {
 			});
 		}
 
+		const isSubCommand = this.fullName != this.name;
 
-		if (this.isFluxCommand) {
-			getCustomObject()["fluxShell"].commands[this.name] = this;
+		if (this.isFluxCommand && !isSubCommand) {
+			const fluxSh = getCustomObject<GCOType>()["fluxShell"]!;
+			fluxSh.commands[this.name] = this;
 		}
 	}
 
@@ -312,9 +315,8 @@ export class Command<T extends object = never> implements CommandData {
 		if (!data.subcommands) data.subcommands = [];
 
 		for (const subcommandData of data.subcommands) {
-			const full = this.fillSubCommandData(subcommandData, data);
-			const subcommand = new Command(full);
-			subcommand.fullName = `${this.fullName} ${subcommand.name}`;
+			const subFullData = this.fillSubCommandData(subcommandData, data);
+			const subcommand = new Command(subFullData, `${this.fullName} ${subFullData.name}`);
 			this.subcommands.push(subcommand);
 		}
 

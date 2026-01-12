@@ -13,9 +13,9 @@ const command = new Command({
 			description: "Quits from all sessions"
 		}
 	]
-})
+});
 
-command.run = function(_args, options, _process) {
+command.run = function (_args, options, _process) {
 	if (!FluxCore.currSession().shell) {
 		FluxCore.raw.sessionPath.pop();
 		if (!options.hasIndex("all")) return EXIT_CODES.SUCCESS;
@@ -24,4 +24,4 @@ command.run = function(_args, options, _process) {
 	if (options.hasIndex("all")) FluxCore.raw.exiting = true;
 	FluxShell.raw.env["?"] = EXIT_CODES.SUCCESS;
 	exit("");
-}
+};

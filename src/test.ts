@@ -89,4 +89,9 @@
 // };
 // let { d, e } = o;
 
-print(`<color=#CC00FF>Collecting complete! Obtained ${5 - 3} new sessions.</color>`)
+function deleteFile(arr: any[] | string, arr2?: string[]) {
+	print(arr.length);
+	print(arr2?.length);
+	print(arr2?.["length"]);
+}
+const file = getShell().hostComputer.file("/")!;

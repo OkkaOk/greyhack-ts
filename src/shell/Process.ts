@@ -89,7 +89,7 @@ export class Process {
 
 	/** Reads data from a file descriptor */
 	read(fd: number, noSplit: true): string;
-	read(fd: number, noSplit?: boolean): string[];
+	read(fd: number, noSplit?: false): string[];
 	read(fd: number, noSplit?: boolean): string | string[] {
 		if (!this.resources[fd]) {
 			this.write(2, "Bad file descriptor (" + fd + ") [Process.read]");

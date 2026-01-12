@@ -8,7 +8,7 @@ export class Libex {
 	/** Returns a IP address where there is the given port open */
 	static getIpWithPortOpen(portNumber: number, timeoutMs = 3000): string {
 		if (!getShell().hostComputer.isNetworkActive()) return "";
-		const octets = [0, 0, 0, 1];
+		const octets = [0, 0, 0, 1] as [number, number, number, number];
 
 		const start = time();
 		while (true) {
@@ -19,17 +19,17 @@ export class Libex {
 				if (port && !port.isClosed()) return ip;
 			}
 
-			octets[0]! += 1;
-			if (octets[0]! > 255) {
-				octets[1]! += 1;
+			octets[0] += 1;
+			if (octets[0] > 255) {
+				octets[1] += 1;
 				octets[0] = 0;
 			}
-			if (octets[1]! > 255) {
-				octets[2]! += 1;
+			if (octets[1] > 255) {
+				octets[2] += 1;
 				octets[1] = 0;
 			}
-			if (octets[2]! > 255) {
-				octets[3]! += 1;
+			if (octets[2] > 255) {
+				octets[3] += 1;
 				octets[2] = 0;
 			}
 

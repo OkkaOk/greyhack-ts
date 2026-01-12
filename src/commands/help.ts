@@ -13,10 +13,10 @@ const command = new Command({
 			required: false,
 		},
 	]
-})
+});
 
 
-command.run = function(args, _options, process) {
+command.run = function (args, _options, process) {
 	if (args.length) {
 		if (args[0] === "tips") {
 
@@ -44,7 +44,7 @@ command.run = function(args, _options, process) {
 		}
 	}
 
-	process.write(1, "\nUse 'help tips' to see some general tips about redirections and command piping")
+	process.write(1, "\nUse 'help tips' to see some general tips about redirections and command piping");
 
 	return EXIT_CODES.SUCCESS;
-}
+};

@@ -28,7 +28,7 @@ command.run = function (args, _options, process) {
 	}
 
 	const airmonRes = crypto.airmon("start", "wlan0");
-	if (isType(airmonRes, "string")){
+	if (isType(airmonRes, "string")) {
 		process.write(2, airmonRes);
 		return EXIT_CODES.GENERAL_ERROR;
 	}
@@ -39,14 +39,14 @@ command.run = function (args, _options, process) {
 	}
 
 	const networks = session.computer.wifiNetworks("wlan0") ?? [];
-	const result: { bssid: string, pwr: number, essid: string }[] = [];
+	const result: { bssid: string, pwr: number, essid: string; }[] = [];
 	for (const network of networks) {
 		const parsedItem = network.split(" ");
 		result.push({
 			bssid: parsedItem[0]!,
 			pwr: slice(parsedItem[1]!, 0, -1).toInt() as number,
 			essid: parsedItem[2]!,
-		})
+		});
 	}
 
 	result.sort("pwr", false);

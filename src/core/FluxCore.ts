@@ -12,13 +12,14 @@ export class FluxCore {
 	}
 
 	static initialize() {
+		FluxShell.initialize();
+
 		globals["wasInitialized"] = getCustomObject<GCOType>().hasIndex("fluxCore");
 		if (!globals["wasInitialized"]) {
 			this.checkCredentials();
 			if (!params.length) this.printArt();
 		}
 
-		FluxShell.initialize();
 		const gcof = this.initializeGCO();
 
 		this.raw = gcof;
@@ -176,7 +177,7 @@ export class FluxCore {
 		return this.raw.sessions.values();
 	}
 
-	static getSession(publicIp?: string, localIp?: string, user?: string, type?: string, id?: string): Session | null {
+	static getSession(publicIp?: string, localIp?: string, user?: string, type?: Session["type"], id?: string): Session | null {
 		if (id && this.raw.sessions.hasIndex(id)) return this.raw.sessions[id]!;
 
 		for (const session of this.getSessions()) {

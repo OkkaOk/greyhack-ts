@@ -106,7 +106,7 @@ command.subcommands[0]!.run = function (args, _options, process) {
 		const res = listSessions(process);
 		if (!res) return EXIT_CODES.GENERAL_ERROR;
 
-		index = userInput("Which session to kill > ").toInt();
+		index = userInput("Which session to use > ").toInt();
 	}
 	else {
 		index = args[0]!.toInt();

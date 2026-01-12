@@ -75,7 +75,7 @@ export class FluxShell {
 		gco.fluxShell = {
 			currPID: 0,
 			env: {
-				"PATH": "/bin:/root/usr/bin",
+				"PATH": "/bin:/root:/usr/bin",
 			},
 			aliases: {},
 			settings: {} as any,
@@ -394,12 +394,17 @@ export class FluxShell {
 				return EXIT_CODES.MISUSE;
 			}
 
+			if (!command.run) {
+				child.parent.write(2, "This command didn't have a run function. This is a bug.");
+				return EXIT_CODES.GENERAL_ERROR;
+			}
+
 			if (this.raw.core && !this.raw.core.raw.nonFluxWarned) {
 				child.parent.write(1, "<color=yellow>This command/binary is not a <b>Flux</b> command and won't have benefits suchs as piping and redirecting (though xargs should still work).")
 				this.raw.core.raw.nonFluxWarned = true
 			}
 
-			return command.run!(args, {}, child.parent);
+			return command.run(args, {}, child.parent);
 		}
 
 		const options = command.extractOptions(args, child);

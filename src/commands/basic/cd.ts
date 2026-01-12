@@ -1,6 +1,6 @@
-import { FluxCore } from "../core/FluxCore";
-import { Command } from "../shell/Command";
-import { EXIT_CODES } from "../shell/FluxShell";
+import { FluxCore } from "../../core/FluxCore";
+import { Command } from "../../shell/Command";
+import { EXIT_CODES } from "../../shell/FluxShell";
 
 const command = new Command({
 	name: "cd",
@@ -13,9 +13,9 @@ const command = new Command({
 			required: true,
 		}
 	]
-})
+});
 
-command.run = function(args, _options, process) {
+command.run = function (args, _options, process) {
 	const session = FluxCore.currSession();
 	const newPath = session.resolvePath(args[0]!);
 
@@ -35,4 +35,4 @@ command.run = function(args, _options, process) {
 	FluxCore.raw.env["PWD"] = newPath;
 
 	return EXIT_CODES.SUCCESS;
-}
+};

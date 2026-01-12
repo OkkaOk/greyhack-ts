@@ -67,7 +67,7 @@ String.prototype.format = function (...formats) {
 		let item = formats.pull();
 
 		if (format[-1] === "d" && isType(item, "number")) {
-			item = round(item);
+			item = Math.round(item);
 		}
 
 		let strItem = str(item);
@@ -98,12 +98,12 @@ String.prototype.removeTags = function () {
 
 Number.prototype.toFixed = function (fractionDigits) {
 	const thisNum = this as number;
-	fractionDigits = floor(fractionDigits);
-	if (fractionDigits <= 0) return str(round(thisNum));
+	fractionDigits = Math.floor(fractionDigits);
+	if (fractionDigits <= 0) return str(Math.round(thisNum));
 
 	let value = thisNum;
 	value = value * (10 ** fractionDigits);
-	value = round(value);
+	value = Math.round(value);
 	value = value / (10 ** fractionDigits);
 
 	let strValue = str(value);
@@ -265,7 +265,7 @@ export function getDays(dateStr = ""): number {
 
 	days += day;
 
-	return round(days);
+	return Math.round(days);
 }
 
 export function formatColumnsf(rows: string[], align: "left" | "center" | "right", joinLines?: false, replacer?: Record<string, string>, spacing?: number): string[];
@@ -308,8 +308,8 @@ export function formatColumnsf(
 			else if (align === "right")
 				paddingLeft = padding;
 			else {
-				paddingLeft = floor(padding / 2);
-				paddingRight = floor(padding / 2);
+				paddingLeft = Math.floor(padding / 2);
+				paddingRight = Math.floor(padding / 2);
 			}
 
 			values[i] = values[i]!.padLeft(paddingLeft).padRight(paddingRight);
