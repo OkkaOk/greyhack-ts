@@ -1,6 +1,7 @@
 import { FluxCore } from "../../core/FluxCore";
 import { Command } from "../../shell/Command";
 import { EXIT_CODES } from "../../shell/FluxShell";
+import { basename } from "../../utils/libokka";
 
 const command = new Command({
 	name: "mv",
@@ -30,8 +31,8 @@ const command = new Command({
 command.run = function (args, options, process) {
 	const session = FluxCore.currSession();
 
-	const sourcePath = session.resolvePath(args[0]!);
-	let destPath = session.resolvePath(args[1]!);
+	const sourcePath = session.resolvePath(args[0]);
+	let destPath = session.resolvePath(args[1]);
 
 	const source = session.computer.file(sourcePath);
 	const dest = session.computer.file(destPath);
@@ -59,7 +60,7 @@ command.run = function (args, options, process) {
 		return EXIT_CODES.SUCCESS;
 	}
 
-	let newName = destPath.split("/")[-1]!;
+	let newName = basename(destPath);
 	if (!dest)
 		return moveFile(source, parentPath(destPath), newName);
 

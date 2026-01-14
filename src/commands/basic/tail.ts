@@ -1,6 +1,7 @@
 import { FluxCore } from "../../core/FluxCore";
 import { Command, type ExitCodeType } from "../../shell/Command";
 import { EXIT_CODES } from "../../shell/FluxShell";
+import { basename } from "../../utils/libokka";
 
 const command = new Command({
 	name: "tail",
@@ -58,7 +59,7 @@ command.run = function (args, options, process) {
 		}
 
 		const absPath = session.resolvePath(filePath);
-		const fileName = absPath.split("/")[-1]!;
+		const fileName = basename(absPath);
 		const fd = process.open(absPath, "r");
 		if (!fd) {
 			exitCode = EXIT_CODES.GENERAL_ERROR;
@@ -75,15 +76,15 @@ command.run = function (args, options, process) {
 	const showNames = data.length >= 2 && !("quiet" in options);
 	for (let i = 0; i < data.length; i++) {
 		if (showNames)
-			process.write(1, `==> ${data[i]!.source} <==`);
+			process.write(1, `==> ${data[i].source} <==`);
 
-		if (!data[i]!.lines.length || lineCount <= 0)
+		if (!data[i].lines.length || lineCount <= 0)
 			continue;
 
-		const startIndex = Math.max(0, data[i]!.lines.length - lineCount);
+		const startIndex = Math.max(0, data[i].lines.length - lineCount);
 
-		for (let j = startIndex; j < data[i]!.lines.length; j++) {
-			process.write(1, data[i]!.lines[j]!);
+		for (let j = startIndex; j < data[i].lines.length; j++) {
+			process.write(1, data[i].lines[j]);
 		}
 
 		if (showNames && i + 1 < data.length)

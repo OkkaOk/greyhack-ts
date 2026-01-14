@@ -1,5 +1,5 @@
 import { FluxCore } from "../core/FluxCore";
-import { baseName } from "../utils/libokka";
+import { basename } from "../utils/libokka";
 import { FluxShell } from "./FluxShell";
 import { Stream } from "./Stream";
 
@@ -122,7 +122,7 @@ export class Process {
 			this.close(newFd);
 		}
 
-		this.resources[newFd] = this.resources[oldFd]!;
+		this.resources[newFd] = this.resources[oldFd];
 		return newFd;
 	}
 
@@ -134,7 +134,7 @@ export class Process {
 
 		filePath = session.resolvePath(filePath);
 		let file = session.computer.file(filePath);
-		const fileName = baseName(filePath);
+		const fileName = basename(filePath);
 
 		if (!file) {
 			if (mode === "r") {
@@ -144,7 +144,7 @@ export class Process {
 
 			let result = session.computer.touch(parentPath(filePath), fileName);
 			if (isType(result, "string")) {
-				if (result.indexOf("Can't create file") !== null && result.indexOf(".") != null) result = result.split("\.")[-1]!.trim();
+				if (result.indexOf("Can't create file") !== null && result.indexOf(".") != null) result = result.split("\.")[-1].trim();
 				this.write(2, `Failed to create file ${filePath}: ${result}`);
 				return null;
 			}
@@ -191,7 +191,7 @@ export class Process {
 			return false;
 		}
 
-		const stream = this.resources[fd]!;
+		const stream = this.resources[fd];
 
 		// I could save the file everytime something gets written to it but I like
 		// it this way when we only save after we close it (typically after command)

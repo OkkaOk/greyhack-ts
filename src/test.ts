@@ -2,8 +2,6 @@
 // s2.matches(/World/);
 // /World/.test(s2);
 
-// import * as lib from "./utils/libokka";
-
 // const obj1 = { a: 1, b: 2 };
 
 // const weird = {
@@ -88,15 +86,33 @@
 //   f: "bar",
 // };
 // let { d, e } = o;
-const myArr = [
-	"ari",
-	"teve",
-	"kimmo"
-]
+class Test {
+	private _myVal = 0
+	constructor(aa: any) {
+	}
 
-const myObj = {}
+	get myVal() {
+		return this._myVal * 2;
+	}
 
-print(Object.hasOwn(myObj, "asd"))
-print(myArr.concat(["asd"]))
-print(myArr.map(n => n + n))
-print(Math.min(1,2,3,4))
+	myFunc(...vals: any[]): any {
+
+	}
+}
+const aa = new Test(userInput)
+
+aa.myFunc("asd", "aaa", "asd");
+
+function myfunc() {
+	return 5;
+}
+
+type MyType = { myVal?: number }
+const myObj: MyType = {
+
+}
+
+print(myObj.myVal)
+
+myObj.myVal = 4
+

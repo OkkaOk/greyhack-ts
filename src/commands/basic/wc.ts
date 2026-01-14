@@ -1,7 +1,7 @@
 import { FluxCore } from "../../core/FluxCore";
 import { Command, type ExitCodeType } from "../../shell/Command";
 import { EXIT_CODES } from "../../shell/FluxShell";
-import { formatColumnsf } from "../../utils/libokka";
+import { basename, formatColumnsf } from "../../utils/libokka";
 
 const command = new Command({
 	name: "wc",
@@ -66,7 +66,7 @@ command.run = function (args, options, process) {
 		}
 
 		const absPath = session.resolvePath(filePath);
-		const fileName = absPath.split("/")[-1]!;
+		const fileName = basename(absPath);
 		const fd = process.open(absPath, "r");
 		if (!fd) {
 			exitCode = EXIT_CODES.GENERAL_ERROR;

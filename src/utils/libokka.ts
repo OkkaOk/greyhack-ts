@@ -93,7 +93,7 @@ String.prototype.format = function (...formats) {
 };
 
 String.prototype.removeTags = function () {
-	return (this as string).replace("<[^>]+>", "");
+	return this.replace("<[^<>]+>", "");
 };
 
 Number.prototype.toFixed = function (fractionDigits) {
@@ -118,6 +118,42 @@ Number.prototype.toFixed = function (fractionDigits) {
 	return strValue;
 };
 
+export function updateLib(libPath: string): GreyHack.LibTypes[keyof GreyHack.LibTypes] | null {
+	let lib = includeLib(libPath);
+	if (!lib) {
+		print(`A library doesn't exist at path: ${libPath}`);
+		return null;
+	}
+
+	const fluxCore = getCustomObject<GCOType>()["fluxCore"];
+	if (!fluxCore)
+		return null;
+
+	const session = fluxCore.sessionPath[-1];
+	if (!session.apt) return lib;
+	
+	const libName = basename(libPath);
+	let result = session.apt.checkUpgrade(libPath);
+	if (isType(result, "string")) {
+		print(`<color=red>Error while checking upgrades for ${libName}: ${result}`);
+		return lib;
+	}
+
+	// No updates
+	if (result === false) return lib;
+
+	print(`<color=green>Updating ${libName}`);
+	session.computer.file(libPath)!.delete();
+	result = session.apt.install(libName, parentPath(libPath));
+
+	if (isType(result, "string")) {
+		print(`<color=red>Failed to update ${libName}: ${result}`);
+		return lib;
+	}
+
+	return includeLib(libPath);
+}
+
 export function requireLib<Lib extends keyof GreyHack.LibTypes>(libName: Lib): GreyHack.LibTypes[Lib] | null {
 	let lib = includeLib(`/lib/${libName}`) as GreyHack.LibTypes[Lib] | null;
 	if (lib) return lib;
@@ -129,7 +165,7 @@ export function requireLib<Lib extends keyof GreyHack.LibTypes>(libName: Lib): G
 	const gco = getCustomObject<GCOType>();
 	if (!gco.fluxCore) return null;
 
-	const currSession = gco.fluxCore.sessionPath[-1]!;
+	const currSession = gco.fluxCore.sessionPath[-1];
 	if (!currSession.computer.isNetworkActive()) {
 		print(`Failed to load ${libName} and there is no internet connection to download it.`);
 		return null;
@@ -210,10 +246,10 @@ export function resolvePath(basePath: string, relativePath?: string): string {
 	return "/" + currParts.join("/");
 }
 
-export function baseName(path: string) {
+export function basename(path: string) {
 	const parts = path.split("/");
 	if (!parts.length) return "";
-	return parts[-1]!;
+	return parts[-1];
 }
 
 export function isValidMd5(md5: string): boolean {
@@ -232,10 +268,10 @@ export function getDays(dateStr = ""): number {
 	if (!dateStr) dateStr = currentDate();
 
 	const segments = dateStr.split(" - ");
-	const date = segments[0]!.split("/");
-	const day = date[0]!.val();
-	const month = date[1]! as keyof typeof monthIndexes;
-	const year = date[2]!.val();
+	const date = segments[0].split("/");
+	const day = date[0].val();
+	const month = date[1] as keyof typeof monthIndexes;
+	const year = date[2].val();
 
 	let days = (year - 2000) * 365.25;
 
@@ -268,6 +304,25 @@ export function getDays(dateStr = ""): number {
 	return Math.round(days);
 }
 
+type FormatSettings = {
+	align?: "left" | "center" | "right",
+	spacing?: number,
+	joinLines?: boolean
+	replacer?: Record<string, string>,
+}
+
+type FormatSettingsJoined = {
+	joinLines: true,
+} & FormatSettings
+
+function test(settings: FormatSettingsJoined): string;
+function test(settings: FormatSettings): string[];
+function test(settings: FormatSettings | FormatSettingsJoined): string[] | string {
+	return ""
+}
+
+const asd = test({ joinLines: false })
+
 export function formatColumnsf(rows: string[], align: "left" | "center" | "right", joinLines?: false, replacer?: Record<string, string>, spacing?: number): string[];
 export function formatColumnsf(rows: string[], align: "left" | "center" | "right", joinLines: true, replacer?: Record<string, string>, spacing?: number): string;
 export function formatColumnsf(
@@ -287,9 +342,9 @@ export function formatColumnsf(
 		for (let i = 0; i < values.length; i++) {
 			if (i >= longestStrings.length) longestStrings.push(0);
 
-			const cleanString = values[i]!;
+			const cleanString = values[i];
 			const length = cleanString.length;
-			if (length > longestStrings[i]!) longestStrings[i] = length;
+			if (length > longestStrings[i]) longestStrings[i] = length;
 		}
 	}
 
@@ -298,7 +353,7 @@ export function formatColumnsf(
 		const values = line.split(" ");
 
 		for (let i = 0; i < values.length; i++) {
-			const padding = longestStrings[i]! - values[i]!.removeTags().length;
+			const padding = longestStrings[i] - values[i].removeTags().length;
 			if (padding <= 0) continue;
 
 			let paddingLeft = 0;
@@ -312,13 +367,16 @@ export function formatColumnsf(
 				paddingRight = Math.floor(padding / 2);
 			}
 
-			values[i] = values[i]!.padLeft(paddingLeft).padRight(paddingRight);
+			values[i] = values[i].padLeft(paddingLeft).padRight(paddingRight);
 		}
 		
 		let newLine = values.join(" ".repeatSelf(spacing));
 		for (const key of Object.keys(replacer)) {
-			newLine = newLine.replace(key, replacer[key]!);
+			newLine = newLine.replace(key, replacer[key]);
 		}
+
+		if (!("IS_GREYBEL" in globals))
+			newLine = "<mspace=0.65em>" + newLine;
 
 		newLines.push(newLine);
 	}

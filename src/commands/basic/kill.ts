@@ -24,8 +24,8 @@ command.run = function (args, _options, process) {
 	const processes: Record<string, string> = {};
 	for (const item of procs) {
 		const parts = item.split(" ");
-		const pid = parts[1]!;
-		const name = parts[4]!;
+		const pid = parts[1];
+		const name = parts[4];
 		processes[pid] = name;
 	}
 

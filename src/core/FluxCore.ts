@@ -1,6 +1,7 @@
 import { FluxShell } from "../shell/FluxShell";
 import type { FluxCoreGCO, FluxShellGCO, GCOType } from "../types/core";
 import { Libex } from "../utils/libex";
+import { basename } from "../utils/libokka";
 import { GreyDB } from "./GreyDB";
 import { Session } from "./Session";
 
@@ -8,7 +9,7 @@ export class FluxCore {
 	static raw: FluxCoreGCO & FluxShellGCO;
 
 	static currSession(): Session {
-		return this.raw.sessionPath[-1]!;
+		return this.raw.sessionPath[-1];
 	}
 
 	static initialize() {
@@ -144,16 +145,16 @@ export class FluxCore {
 
 		// Load settings
 		const defaultSettings = this.getDefaultSettings();
-		let settings = gcof.database.fetchOne("settings") as Partial<typeof defaultSettings>;
+		let settings = gcof.database.fetchOne("settings") as Record<string, any> | null;
 
 		if (!settings) {
 			settings = defaultSettings;
 			gcof.database.insert("settings", defaultSettings);
 		}
 
-		for (const settingKey of defaultSettings.indexes() as (keyof typeof settings)[]) {
-			if (!settings.hasIndex(settingKey)) {
-				settings[settingKey] = defaultSettings[settingKey] as any;
+		for (const settingKey of defaultSettings.indexes() as (keyof typeof defaultSettings)[]) {
+			if (!(settingKey in settings)) {
+				settings[settingKey] = defaultSettings[settingKey];
 				gcof.database.modified = true;
 			}
 
@@ -178,7 +179,7 @@ export class FluxCore {
 	}
 
 	static getSession(publicIp?: string, localIp?: string, user?: string, type?: Session["type"], id?: string): Session | null {
-		if (id && this.raw.sessions.hasIndex(id)) return this.raw.sessions[id]!;
+		if (id && this.raw.sessions.hasIndex(id)) return this.raw.sessions[id];
 
 		for (const session of this.getSessions()) {
 			if (publicIp && publicIp != session.publicIp) continue;
@@ -214,7 +215,7 @@ export class FluxCore {
 
 		if (this.raw.sessions.hasIndex(newSession.id)) return null;
 
-		if (FluxShell.raw.settings["killWorseSessions"]) {
+		if (FluxShell.raw.settings["killWorseSessions"] && !isRshellClient && !isProxy) {
 			for (const session of this.getSessions()) {
 				if (newSession.publicIp != session.publicIp) continue;
 				if (newSession.localIp != session.localIp) continue;
@@ -245,7 +246,7 @@ export class FluxCore {
 		if (!folder) folder = "/home/guest";
 
 		if (!targetShell.hostComputer.file(folder)) {
-			targetShell.hostComputer.createFolder(parentPath(folder), folder.split("/")[-1]);
+			targetShell.hostComputer.createFolder(parentPath(folder), basename(folder));
 		}
 
 		const scpResult = this.currSession().shell!.scp(programPath(), folder, targetShell);

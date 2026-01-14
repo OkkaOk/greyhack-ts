@@ -63,7 +63,7 @@ command.run = function (args, options, process) {
 			if (!isType(col, "number")) continue;
 			if (col < 0 || col >= fields.length) continue;
 
-			selected.push(fields[col]!);
+			selected.push(fields[col]);
 		}
 
 		if (!selected.length)

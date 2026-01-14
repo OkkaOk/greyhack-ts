@@ -38,15 +38,15 @@ command.run = function (args, options, process) {
 	let last = 0;
 	let increment = 1;
 	if (args.length === 1) {
-		last = JSON.parse(args[0]!);
+		last = JSON.parse(args[0]);
 	}
 	else {
-		first = JSON.parse(args[0]!);
-		last = JSON.parse(args[1]!);
+		first = JSON.parse(args[0]);
+		last = JSON.parse(args[1]);
 	}
 
 	if (args.length >= 3)
-		increment = JSON.parse(args[2]!);
+		increment = JSON.parse(args[2]);
 
 	function fractionDigits(num: number) {
 		const numStr = str(num);

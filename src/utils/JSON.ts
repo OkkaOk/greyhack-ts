@@ -19,11 +19,11 @@ export class JSON {
 
 	private static peek(): string {
 		if (this.pos >= this.textLength) return "";
-		return this.text[this.pos]!;
+		return this.text[this.pos];
 	}
 
 	private static nextChar(): string {
-		const c = this.text[this.pos]!;
+		const c = this.text[this.pos];
 		this.pos += 1;
 		return c;
 	}
@@ -36,7 +36,7 @@ export class JSON {
 	}
 
 	private static skipWs(): void {
-		while (this.pos < this.textLength && this.isWs(this.text[this.pos]!))
+		while (this.pos < this.textLength && this.isWs(this.text[this.pos]))
 			this.pos += 1;
 	}
 
@@ -65,7 +65,7 @@ export class JSON {
 		if (this.pos >= this.textLength)
 			return null;
 
-		const c = this.text[this.pos]!;
+		const c = this.text[this.pos];
 		if (c === "{") return this.parseObject();
 		if (c === "[") return this.parseArray();
 		if (c === char(34) || c === "'") return this.parseString();
@@ -165,13 +165,13 @@ export class JSON {
 	private static parseNumber(): number | null {
 		if (this.pos >= this.textLength) return null;
 
-		const isNegative = this.text[this.pos]! === "-";
+		const isNegative = this.text[this.pos] === "-";
 		if (isNegative)
 			this.pos += 1;
 
 		let intPart = 0;
 		while (this.pos < this.textLength) {
-			const ch = this.text[this.pos]!;
+			const ch = this.text[this.pos];
 			const d = ch.toInt();
 			if (isType(d, "string"))
 				break;
@@ -189,7 +189,7 @@ export class JSON {
 			let pow10 = 1;
 
 			while (this.pos < this.textLength) {
-				const ch = this.text[this.pos]!;
+				const ch = this.text[this.pos];
 				const d = ch.toInt();
 				if (isType(d, "string"))
 					break;
@@ -214,7 +214,7 @@ export class JSON {
 
 			let exp = 0;
 			while (this.pos < this.textLength) {
-				const ch = this.text[this.pos]!;
+				const ch = this.text[this.pos];
 				const d = ch.toInt();
 				if (isType(d, "string"))
 					break;

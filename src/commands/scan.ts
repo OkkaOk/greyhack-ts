@@ -107,11 +107,11 @@ command.run = function (args, _options, process) {
 	let router = getRouter(args[0]);
 	let ports: GreyHack.Port[] | string | null = [];
 
-	const isLan = isLanIp(args[0]!);
+	const isLan = isLanIp(args[0]);
 
 	if (isLan) {
 		router = getRouter()!;
-		ports = router.devicePorts(args[0]!);
+		ports = router.devicePorts(args[0]);
 		if (!isType(ports, "list")) {
 			process.write(2, str(ports));
 			return EXIT_CODES.GENERAL_ERROR;

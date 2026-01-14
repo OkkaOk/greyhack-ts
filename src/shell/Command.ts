@@ -155,7 +155,7 @@ export class Command<T extends object = any> implements CommandData {
 
 			let nextArg: string | null = null;
 			if (args.hasIndex(i + 1)) {
-				nextArg = args[i + 1]!;
+				nextArg = args[i + 1];
 			}
 
 			const nextArgNumeric = nextArg && getType(nextArg.toInt()) === "number";
@@ -186,7 +186,7 @@ export class Command<T extends object = any> implements CommandData {
 					return null;
 				}
 
-				options[option.name]!.push(value.toInt());
+				options[option.name].push(value.toInt());
 				args.remove(i);
 				continue;
 			}
@@ -203,7 +203,7 @@ export class Command<T extends object = any> implements CommandData {
 				if (!option) continue;
 
 				if (!options.hasIndex(option.name)) options[option.name] = [];
-				options[option.name]!.push("");
+				options[option.name].push("");
 				found = true;
 			}
 
@@ -237,13 +237,13 @@ export class Command<T extends object = any> implements CommandData {
 	}
 
 	showHelp(process: Process) {
-		process.write(1, this.description + "\n");
+		process.write(1, this.description + "\\n");
 
 		process.write(1, "Usage:");
 		process.write(1, "  " + this.getUsage());
 
 		if (this.examples.length) {
-			process.write(1, "\nExample:");
+			process.write(1, "\\nExample:");
 			const padded: string[] = [];
 			for (const example of this.examples) {
 				padded.push("  " + example);
@@ -253,39 +253,39 @@ export class Command<T extends object = any> implements CommandData {
 		}
 
 		if (this.subcommands.length) {
-			process.write(1, "\nSubcommands:");
+			process.write(1, "\\nSubcommands:");
 			const subOut: string[] = [];
 			for (const subcommand of this.subcommands) {
 				subOut.push(`§§${subcommand.name} ${subcommand.description.replace(" ", "§")}`);
 			}
 
-			process.write(1, formatColumns(subOut.join("\n")).replace("§", " "));
+			process.write(1, formatColumns(subOut.join(char(10))).replace("§", " "));
 		}
 
 		if (this.options.length) {
-			process.write(1, "\nOptions:");
-			const optionsOut: string[] = [];
+			process.write(1, "\\nOptions:");
+			const optionsOut: string[] = [];
 			for (const option of this.options) {
 				optionsOut.push(`§§${option.flags.join(",§")} ${option.description.replace(" ", "§")}`);
 			}
 
-			process.write(1, formatColumns(optionsOut.join("\n").replace("§", " ")));
+			process.write(1, formatColumns(optionsOut.join(char(10))).replace("§", " "));
 		}
 
 		if (this.arguments.length) {
-			process.write(1, "\nArguments:");
+			process.write(1, "\\nArguments:");
 			const argsOut: string[] = [];
 			for (const arg of this.arguments) {
 				argsOut.push(`§§${arg.name.upper()} ${arg.description.replace(" ", "§")}`);
 			}
 
-			process.write(1, formatColumns(argsOut.join("\ŋ").replace("§", " ")));
+			process.write(1, formatColumns(argsOut.join(char(10))).replace("§", " "));
 		}
 	}
 
 	private getOptionForFlag(flag: string): Required<CommandOption> | null {
 		if (flag.indexOf("=") != null) {
-			flag = flag.split("=")[0]!;
+			flag = flag.split("=")[0];
 		}
 
 		for (const option of this.options) {

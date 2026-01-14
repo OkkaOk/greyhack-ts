@@ -1,6 +1,7 @@
 import { FluxCore } from "../../core/FluxCore";
 import { Command } from "../../shell/Command";
 import { EXIT_CODES } from "../../shell/FluxShell";
+import { basename } from "../../utils/libokka";
 
 const command = new Command({
 	name: "touch",
@@ -17,8 +18,8 @@ const command = new Command({
 
 command.run = function (args, _options, process) {
 	const session = FluxCore.currSession();
-	const filePath = session.resolvePath(args[0]!);
-	const result = session.computer.touch(parentPath(filePath), filePath.split("/")[-1]!);
+	const filePath = session.resolvePath(args[0]);
+	const result = session.computer.touch(parentPath(filePath), basename(filePath));
 
 	if (isType(result, "string")) {
 		process.write(2, result);

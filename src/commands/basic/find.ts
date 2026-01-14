@@ -37,7 +37,7 @@ command.run = function (args, options, process) {
 	const session = FluxCore.currSession();
 
 	let folderPath = "/";
-	if (args.length) folderPath = session.resolvePath(args[0]!);
+	if (args.length) folderPath = session.resolvePath(args[0]);
 
 	const folderFile = session.computer.file(folderPath);
 	if (!folderFile) {

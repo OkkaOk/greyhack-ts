@@ -9,7 +9,7 @@ type Query<T> = Partial<{
 interface DBTableType {
 	name: PropertyKey;
 	rows: any[];
-	primaryKey?: PropertyKey;
+	primaryKey: PropertyKey | undefined;
 }
 
 class DBHelper {
@@ -82,7 +82,7 @@ class DBTable implements DBTableType {
 	rows: any[];
 	funcs: (() => string[])[];
 	kIndex: Record<PropertyKey, Record<any, number[]>>;
-	primaryKey?: PropertyKey;
+	primaryKey: PropertyKey | undefined;
 	temporary = false;
 
 	constructor(name: PropertyKey, primaryKey?: PropertyKey) {
@@ -100,7 +100,7 @@ class DBTable implements DBTableType {
 			if (!this.kIndex[key][row[key]])
 				this.kIndex[key][row[key]] = [];
 
-			this.kIndex[key][row[key]]!.push(index);
+			this.kIndex[key][row[key]].push(index);
 		}
 	}
 
@@ -193,7 +193,7 @@ export class GreyDB<Schema extends DBSchema> {
 		const primaryKey = table.primaryKey;
 
 		if (primaryKey && table.kIndex[primaryKey] && table.kIndex[primaryKey].hasIndex(row[primaryKey])) {
-			const index = table.kIndex[primaryKey][row[primaryKey]]![0]!;
+			const index = table.kIndex[primaryKey][row[primaryKey]][0];
 			table.rows[index] = row;
 		}
 		else {
@@ -228,7 +228,7 @@ export class GreyDB<Schema extends DBSchema> {
 
 		const output: Schema[Name][] = [];
 		for (const index of table.getRowIndexes(query)) {
-			const row = table.rows[index]!;
+			const row = table.rows[index];
 
 			if (DBHelper.rowMatchesQuery(row, query)) {
 				output.push(row);
@@ -243,7 +243,7 @@ export class GreyDB<Schema extends DBSchema> {
 		const arr = this.fetch(tableName, query, 1);
 		if (!arr.length) return null;
 
-		return arr[0]!;
+		return arr[0];
 	}
 
 	/** Remove rows that match the query
@@ -495,7 +495,7 @@ export class GreyDB<Schema extends DBSchema> {
 		const tables: typeof this.tables = getCustomObject()[gcoKey]["tables"];
 		for (const tableName of tables.indexes()) {
 			this.addTable(tableName);
-			const table = this.tables[tableName]!;
+			const table = this.tables[tableName];
 
 			if (tables[tableName]?.primaryKey)
 				table.primaryKey = tables[tableName].primaryKey;

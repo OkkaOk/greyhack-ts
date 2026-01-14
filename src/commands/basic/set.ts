@@ -36,7 +36,7 @@ command.run = function (args, options, process) {
 		process.write(1, "<b>ENV Variables:");
 		const out: string[] = [];
 		for (const variable of FluxShell.raw.env.indexes<string>()) {
-			out.push(strFormat.format(variable, FluxShell.raw.env[variable]!.replace(" ", "§")));
+			out.push(strFormat.format(variable, FluxShell.raw.env[variable].replace(" ", "§")));
 		}
 
 		process.write(1, formatColumnsf(out, "left", false, { "§": " " }));

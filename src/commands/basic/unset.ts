@@ -31,7 +31,7 @@ command.run = function (args, options, process) {
 		return EXIT_CODES.SUCCESS;
 	}
 
-	const variable = args[0]!;
+	const variable = args[0];
 	if (!FluxShell.raw.env[variable]) {
 		process.write(2, `ENV variable $${variable} doesn't exist!`);
 		return EXIT_CODES.GENERAL_ERROR;

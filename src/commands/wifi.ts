@@ -43,14 +43,14 @@ command.run = function (args, _options, process) {
 	for (const network of networks) {
 		const parsedItem = network.split(" ");
 		result.push({
-			bssid: parsedItem[0]!,
-			pwr: slice(parsedItem[1]!, 0, -1).toInt() as number,
-			essid: parsedItem[2]!,
+			bssid: parsedItem[0],
+			pwr: slice(parsedItem[1], 0, -1).toInt() as number,
+			essid: parsedItem[2],
 		});
 	}
 
 	result.sort("pwr", false);
-	let chosen = result[0]!;
+	let chosen = result[0];
 
 	if (args.length) {
 		for (const net of result) {

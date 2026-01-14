@@ -17,7 +17,7 @@ const command = new Command({
 
 command.run = function (args, _options, process) {
 	const session = FluxCore.currSession();
-	const newPath = session.resolvePath(args[0]!);
+	const newPath = session.resolvePath(args[0]);
 
 	const file = session.computer.file(newPath);
 	if (!file) {

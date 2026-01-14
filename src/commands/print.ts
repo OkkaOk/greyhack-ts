@@ -20,7 +20,7 @@ const command = new Command({
 command.run = function (args, _options, process) {
 	let ip = FluxCore.currSession().publicIp;
 	if (args.length)
-		ip = args[0]!;
+		ip = args[0];
 
 	const data = FluxCore.raw.data[ip];
 	if (!data) {

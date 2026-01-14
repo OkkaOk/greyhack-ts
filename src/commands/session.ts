@@ -98,7 +98,7 @@ function listSessions(process: Process): boolean {
 }
 
 // Use
-command.subcommands[0]!.run = function (args, _options, process) {
+command.subcommands[0].run = function (args, _options, process) {
 	refreshSessions();
 
 	let index: string | number = 0;
@@ -109,7 +109,7 @@ command.subcommands[0]!.run = function (args, _options, process) {
 		index = userInput("Which session to use > ").toInt();
 	}
 	else {
-		index = args[0]!.toInt();
+		index = args[0].toInt();
 	}
 
 	if (!isType(index, "number")) {
@@ -123,14 +123,14 @@ command.subcommands[0]!.run = function (args, _options, process) {
 	}
 
 	process.write(1, process.read(0));
-	const session = FluxCore.getSessions()[index - 1]!;
+	const session = FluxCore.getSessions()[index - 1];
 	session.connect();
 
 	return EXIT_CODES.SUCCESS;
 };
 
 // Kill
-command.subcommands[1]!.run = function (args, options, process) {
+command.subcommands[1].run = function (args, options, process) {
 	refreshSessions();
 
 	if (options["all"]) {
@@ -150,7 +150,7 @@ command.subcommands[1]!.run = function (args, options, process) {
 		index = userInput("Which session to kill > ").toInt();
 	}
 	else {
-		index = args[0]!.toInt();
+		index = args[0].toInt();
 	}
 
 	if (!isType(index, "number")) {
@@ -163,7 +163,7 @@ command.subcommands[1]!.run = function (args, options, process) {
 		return EXIT_CODES.MISUSE;
 	}
 
-	const session = FluxCore.getSessions()[index - 1]!;
+	const session = FluxCore.getSessions()[index - 1];
 	const res = session.kill();
 	if (res) {
 		process.write(1, "Session killed");
@@ -174,13 +174,13 @@ command.subcommands[1]!.run = function (args, options, process) {
 };
 
 // List
-command.subcommands[2]!.run = function (_args, _options, process) {
+command.subcommands[2].run = function (_args, _options, process) {
 	listSessions(process);
 	return EXIT_CODES.SUCCESS;
 };
 
 // Terminal
-command.subcommands[3]!.run = function (_args, _options, _process) {
+command.subcommands[3].run = function (_args, _options, _process) {
 	FluxCore.raw.exiting = true;
 	FluxCore.raw.env["?"] = EXIT_CODES.SUCCESS;
 	return FluxCore.currSession().shell!.startTerminal();

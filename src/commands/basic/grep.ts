@@ -1,6 +1,7 @@
 import { FluxCore } from "../../core/FluxCore";
 import { Command, type ExitCodeType } from "../../shell/Command";
 import { EXIT_CODES } from "../../shell/FluxShell";
+import { basename } from "../../utils/libokka";
 
 const command = new Command({
 	name: "grep",
@@ -47,7 +48,7 @@ command.run = function (args, options, process) {
 
 	const session = FluxCore.currSession();
 	const data: { source: string, lines: string[] }[] = [];
-	const pattern = args[0]!;
+	const pattern = args[0];
 	const files = slice(args, 1);
 
 	if (!files.length) {
@@ -67,7 +68,7 @@ command.run = function (args, options, process) {
 		}
 
 		const absPath = session.resolvePath(filePath);
-		const fileName = absPath.split("/")[-1]!;
+		const fileName = basename(absPath);
 		const fd = process.open(absPath, "r");
 		if (!fd) continue;
 

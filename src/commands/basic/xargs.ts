@@ -44,8 +44,8 @@ command.run = function (args, options, process) {
 	const lines = process.read(0);
 
 	// We need to tokenize this because args[0] might be a subcommand like "session use"
-	const commandTokens = FluxShell.tokenize(args[0]!);
-	const cmd = FluxShell.getCommand(commandTokens[0]!, slice(commandTokens, 1));
+	const commandTokens = FluxShell.tokenize(args[0]);
+	const cmd = FluxShell.getCommand(commandTokens[0], slice(commandTokens, 1));
 	if (!cmd.valid) {
 		process.write(2, `Command ${args[0]} doesn't exist`);
 		return EXIT_CODES.CMD_NOT_FOUND;

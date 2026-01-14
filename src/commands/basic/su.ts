@@ -37,7 +37,7 @@ command.run = function (args, _options, process) {
 		return existing.connect() ? EXIT_CODES.SUCCESS : EXIT_CODES.GENERAL_ERROR;
 
 	if (args.length >= 2) {
-		const success = session.switchUser(args[0]!, args[1]!);
+		const success = session.switchUser(args[0], args[1]);
 		if (success) return EXIT_CODES.SUCCESS;
 
 		process.write(2, "Invalid username or password");
@@ -46,7 +46,7 @@ command.run = function (args, _options, process) {
 
 	const hashes = FluxCore.raw.database.fetch("hashes");
 	for (const pair of hashes) {
-		const success = session.switchUser(args[0]!, pair.plain);
+		const success = session.switchUser(args[0], pair.plain);
 		if (!success) continue;
 
 		process.write(1, `Brute force successful! Password was ${pair.plain}`);

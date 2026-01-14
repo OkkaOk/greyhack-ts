@@ -1,6 +1,6 @@
 import { FluxShell } from "../shell/FluxShell";
 import { Libex } from "../utils/libex";
-import { requireLib, resolvePath } from "../utils/libokka";
+import { basename, requireLib, resolvePath } from "../utils/libokka";
 import { FluxCore } from "./FluxCore";
 
 export class Session {
@@ -87,7 +87,7 @@ export class Session {
 		}
 
 		FluxCore.raw.sessionPath.push(this);
-		const res = this.shell.launch(`/home/guest/${programPath().split("/")[-1]}`, launchParams);
+		const res = this.shell.launch(`/home/guest/${basename(programPath())}`, launchParams);
 		if (isType(res, "string")) print(res.color("red"));
 		FluxCore.raw.sessionPath.pop();
 

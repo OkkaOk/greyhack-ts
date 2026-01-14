@@ -31,7 +31,7 @@ command.run = function (args, options, process) {
 		return EXIT_CODES.SUCCESS;
 	}
 
-	const alias = args[0]!;
+	const alias = args[0];
 	if (!FluxShell.raw.aliases[alias]) {
 		process.write(2, `Alias '${alias}' doesn't exist!`);
 		return EXIT_CODES.GENERAL_ERROR;

@@ -77,14 +77,14 @@ const command = new Command({
 });
 
 // Save
-command.subcommands[0]!.run = function (_args, _options, process) {
+command.subcommands[0].run = function (_args, _options, process) {
 	FluxCore.raw.database.save(true);
 	process.write(1, "Database saved!".color("green"));
 	return EXIT_CODES.SUCCESS;
 };
 
 // Fetch
-command.subcommands[1]!.run = function (args, options, process) {
+command.subcommands[1].run = function (args, options, process) {
 	let limit: number | undefined = undefined;
 	if ("count" in options) limit = options["count"][0] as number;
 
@@ -96,7 +96,7 @@ command.subcommands[1]!.run = function (args, options, process) {
 
 	let query: Record<string, string> = {};
 	if (args.length >= 2) {
-		query = JSON.parse(args[1]!);
+		query = JSON.parse(args[1]);
 		if (!isType(query, "map")) {
 			process.write(2, `Invalid fetch query: ${args[1]}`);
 			return EXIT_CODES.MISUSE;
@@ -110,7 +110,7 @@ command.subcommands[1]!.run = function (args, options, process) {
 }
 
 // Remove
-command.subcommands[2]!.run = function (args, options, process) {
+command.subcommands[2].run = function (args, options, process) {
 	const tableName = args[0] as keyof DBSchema
 	if (!FluxCore.raw.database.hasTable(tableName)) {
 		process.write(2, `Table '${tableName}' doesn't exist`);
@@ -122,7 +122,7 @@ command.subcommands[2]!.run = function (args, options, process) {
 
 	let query: Record<string, string> = {};
 	if (args.length >= 2) {
-		query = JSON.parse(args[1]!);
+		query = JSON.parse(args[1]);
 		if (!isType(query, "map")) {
 			process.write(2, `Invalid fetch query: ${args[1]}`);
 			return EXIT_CODES.MISUSE;

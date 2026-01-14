@@ -27,9 +27,9 @@ print = (value: any, replaceText = false) => {
 			value = value.replace("<\/?color[^>]*>", "");
 		}
 
-		if (replaceText) gco.fluxShell.activeProcesses[-1]!.flush(fd);
+		if (replaceText) gco.fluxShell.activeProcesses[-1].flush(fd);
 
-		gco.fluxShell.activeProcesses[-1]!.write(fd, value);
+		gco.fluxShell.activeProcesses[-1].write(fd, value);
 	}
 	else {
 		raw_print(value, replaceText);
@@ -56,11 +56,11 @@ export class FluxShell {
 	static raw: FluxShellGCO;
 
 	static get mainProcess(): Process {
-		return this.raw.activeProcesses[0]!;
+		return this.raw.activeProcesses[0];
 	}
 
 	static get currProcess(): Process {
-		return this.raw.activeProcesses[-1]!;
+		return this.raw.activeProcesses[-1];
 	}
 
 	static initialize() {
@@ -324,7 +324,7 @@ export class FluxShell {
 			return command;
 		}
 
-		let command = this.raw.commands[commandName]!;
+		let command = this.raw.commands[commandName];
 
 		// Get the subcommand if we're using one
 		while (args.length) {
@@ -464,24 +464,24 @@ export class FluxShell {
 		const expandedTokens: Record<string, boolean> = {};
 
 		// Recursively do alias expansion for the first token in the pipeline
-		let firstToken = pipeline.tokens[0]!
+		let firstToken = pipeline.tokens[0]
 		while (this.raw.aliases.hasIndex(firstToken) && !expandedTokens.hasIndex(firstToken)) {
-			const aliasTokens = this.tokenize(this.raw.aliases[firstToken]!)
+			const aliasTokens = this.tokenize(this.raw.aliases[firstToken])
 			pipeline.tokens = aliasTokens.concat(slice(pipeline.tokens, 1));
 			expandedTokens[firstToken] = true;
-			firstToken = pipeline.tokens[0]!;
+			firstToken = pipeline.tokens[0];
 		}
 
 		while (pipeline.tokens.length) {
 			const token = pipeline.tokens.pull();
 			let nextToken: string | null = null;
 			if (pipeline.tokens.hasIndex(0))
-				nextToken = pipeline.tokens[0]!;
+				nextToken = pipeline.tokens[0];
 
 			let newFd: string | number = "";
-			if (token.isMatch("^\d?>>$")) newFd = token.split(">>")[0]!.toInt();
-			if (isType(newFd, "string") && token.isMatch("^\d?>$")) newFd = token.split(">")[0]!.toInt();
-			if (isType(newFd, "string") && token.isMatch("^\d?>&\d$")) newFd = token.split(">&")[0]!.toInt();
+			if (token.isMatch("^\d?>>$")) newFd = token.split(">>")[0].toInt();
+			if (isType(newFd, "string") && token.isMatch("^\d?>$")) newFd = token.split(">")[0].toInt();
+			if (isType(newFd, "string") && token.isMatch("^\d?>&\d$")) newFd = token.split(">&")[0].toInt();
 			if (isType(newFd, "string")) newFd = 1;
 
 			// TODO: Refactor
@@ -513,7 +513,7 @@ export class FluxShell {
 			}
 			// Handle fd>&fd (e.g. 2>&1)
 			else if (token.isMatch("^\d?>&\d$")) {
-				let oldFd = token.split(">&")[1]!.toInt();
+				let oldFd = token.split(">&")[1].toInt();
 				if (isType(oldFd, "string")) oldFd = 1;
 
 				const res = currStage.process.dup(oldFd, newFd);
@@ -639,7 +639,7 @@ export class FluxShell {
 
 	static executePipeline() {
 		while (this.raw.pipelines.length) {
-			const pipeline = this.raw.pipelines[0]!;
+			const pipeline = this.raw.pipelines[0];
 
 			// There was a pipeline before this (separated by ; || &&)
 			if (this.raw.prevPipeline) {
@@ -664,7 +664,7 @@ export class FluxShell {
 					continue;
 				}
 
-				const commandName = stage.tokens[0]!;
+				const commandName = stage.tokens[0];
 				const commandArgs = slice(stage.tokens, 1);
 				const command = this.getCommand(commandName, commandArgs);
 
@@ -676,7 +676,7 @@ export class FluxShell {
 			// The only scenario where the id differs is that if one of the commands in the pipeline
 			// launched another instance of this script (e.g. hop sessions) and the new instance picked up
 			// the remaining pipeline
-			if (pipeline.id === this.raw.pipelines[0]!.id) {
+			if (pipeline.id === this.raw.pipelines[0].id) {
 				this.raw.prevPipeline = this.raw.pipelines.pull();
 			}
 		}
@@ -709,7 +709,7 @@ export class FluxShell {
 				if (session.isProxy) {
 					color = "#00FFFF";
 				}
-				else if (session.publicIp != this.raw.core.raw.sessionPath[0]!.publicIp) {
+				else if (session.publicIp != this.raw.core.raw.sessionPath[0].publicIp) {
 					color = "#FF8800";
 				}
 

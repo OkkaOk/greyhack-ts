@@ -34,8 +34,8 @@ command.run = function (args, _options, process) {
 
 		if (line.indexOf(":") != null) {
 			const parts = line.split(":");
-			password = parts[1]!;
-			account = parts[0]!;
+			password = parts[1];
+			account = parts[0];
 		}
 
 		if (isValidMd5(password)) {

@@ -7,6 +7,10 @@ const command = new Command({
 	name: "alias",
 	description: "Create aliases",
 	category: "System Management",
+	examples: [
+		`alias cls="clear"`,
+		`alias passwords="find -p=r -t=f | xargs grep .*:.{32}$ | crack"`,
+	],
 	arguments: [
 		{
 			name: "NAME[=VALUE]",
@@ -38,7 +42,7 @@ command.run = function (args, options, process) {
 		process.write(1, "Active aliases:");
 		const out: string[] = [];
 		for (const alias of FluxShell.raw.aliases.indexes<string>()) {
-			out.push(strFormat.format(alias, FluxShell.raw.aliases[alias]!.replace(" ", "§")));
+			out.push(strFormat.format(alias, FluxShell.raw.aliases[alias].replace(" ", "§")));
 		}
 
 		process.write(1, formatColumnsf(out, "left", false, { "§": " " }));

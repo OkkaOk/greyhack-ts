@@ -1,6 +1,7 @@
 import { FluxCore } from "../../core/FluxCore";
 import { Command } from "../../shell/Command";
 import { EXIT_CODES } from "../../shell/FluxShell";
+import { basename } from "../../utils/libokka";
 
 const command = new Command({
 	name: "scp",
@@ -36,7 +37,7 @@ const command = new Command({
 
 command.run = function (args, options, process) {
 	let sessionFrom = FluxCore.currSession();
-	let sessionTo = FluxCore.raw.sessionPath[0]!;
+	let sessionTo = FluxCore.raw.sessionPath[0];
 
 	if ("to_session" in options) {
 		const index = (options["to_session"][0] as string).toInt();
@@ -45,7 +46,7 @@ command.run = function (args, options, process) {
 			return EXIT_CODES.MISUSE;
 		}
 
-		const session = FluxCore.getSessions()[index]!;
+		const session = FluxCore.getSessions()[index];
 		if (!session.shell) {
 			process.write(2, "The session you're uploading the file to isn't a shell session!");
 			return EXIT_CODES.GENERAL_ERROR;
@@ -61,7 +62,7 @@ command.run = function (args, options, process) {
 			return EXIT_CODES.MISUSE;
 		}
 
-		const session = FluxCore.getSessions()[index]!;
+		const session = FluxCore.getSessions()[index];
 		if (!session.shell) {
 			process.write(2, "The session you're uploading the file to isn't a shell session!");
 			return EXIT_CODES.GENERAL_ERROR;
@@ -70,14 +71,14 @@ command.run = function (args, options, process) {
 		sessionFrom = session;
 	}
 
-	const filePath = sessionFrom.resolvePath(args[0]!);
-	const scpResult = sessionFrom.shell!.scp(filePath, args[1]!, sessionTo.shell!);
+	const filePath = sessionFrom.resolvePath(args[0]);
+	const scpResult = sessionFrom.shell!.scp(filePath, args[1], sessionTo.shell!);
 	if (isType(scpResult, "string")) {
 		process.write(1, `Failed to scp file: ${scpResult}`);
 		return EXIT_CODES.GENERAL_ERROR;
 	}
 
-	const fileName = filePath.split("/")[-1];
+	const fileName = basename(filePath);
 	process.write(1, `${filePath.color("green")} copied to ${(args[1] + "/" + fileName).color("green")}`);
 
 	return EXIT_CODES.SUCCESS;

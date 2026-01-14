@@ -99,7 +99,7 @@ command.run = function (args, options, process) {
 			continue;
 		}
 
-		const file = process.resources[fd]!.file!;
+		const file = process.resources[fd].file!;
 		process.close(fd);
 
 		if (!file.isFolder()) {

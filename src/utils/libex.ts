@@ -58,7 +58,7 @@ export class Libex {
 	}
 
 	static scanLib(metaLib: GreyHack.MetaLib, verbose = false): MetaLibVuln[] {
-		const homeSession = FluxCore.raw.sessionPath[0]!;
+		const homeSession = FluxCore.raw.sessionPath[0];
 
 		const vulns = FluxCore.raw.database.fetch("vulns", { library: metaLib.libName, version: metaLib.version });
 		if (vulns.length) {
@@ -241,8 +241,8 @@ export class Libex {
 			const parts = line.split(":");
 			if (!parts || parts.length < 2) continue;
 
-			const user = parts[0]!;
-			const hash = parts[1]!;
+			const user = parts[0];
+			const hash = parts[1];
 
 			if (networkData[dataKey][user] != "")
 				continue;
@@ -261,8 +261,8 @@ export class Libex {
 
 				for (const mail of mails) {
 					const segments = mail.split(char(10));
-					// const mailId = slice(segments[2]!, 8);
-					const mailFrom = slice(segments[3]!, 6);
+					// const mailId = slice(segments[2], 8);
+					const mailFrom = slice(segments[3], 6);
 
 					if (mailFrom.indexOf("no-reply") !== null) continue;
 
