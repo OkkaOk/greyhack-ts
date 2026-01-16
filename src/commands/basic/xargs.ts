@@ -45,7 +45,9 @@ command.run = function (args, options, process) {
 
 	// We need to tokenize this because args[0] might be a subcommand like "session use"
 	const commandTokens = FluxShell.tokenize(args[0]);
-	const cmd = FluxShell.getCommand(commandTokens[0], slice(commandTokens, 1));
+	const commandName = commandTokens[0];
+	const commandArgs = slice(commandTokens, 1)
+	const cmd = FluxShell.getCommand(commandName, commandArgs);
 	if (!cmd.valid) {
 		process.write(2, `Command ${args[0]} doesn't exist`);
 		return EXIT_CODES.CMD_NOT_FOUND;
@@ -57,7 +59,7 @@ command.run = function (args, options, process) {
 	let delimiter: string | null = null;
 	if ("delimiter" in options) delimiter = options["delimiter"][0] as string;
 
-	const initialArgs = slice(args, 1);
+	const initialArgs = commandArgs;
 
 	function replaceArgs(initial: string[], line: string, replaceKey: string) {
 		const newArgs: string[] = [];

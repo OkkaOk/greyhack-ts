@@ -76,16 +76,14 @@ command.run = function (args, options, process) {
 	}
 
 	const session = FluxCore.currSession();
-
-	const filePaths: string[] = [];
-	for (const arg of args)
-		filePaths.push(session.resolvePath(arg));
-
+	
 	let exitCode: ExitCodeType = EXIT_CODES.SUCCESS;
-	for (const filePath of filePaths) {
-		const file = session.computer.file(filePath);
+	for (const arg of args) {
+		const absPath = session.resolvePath(arg);
+
+		const file = session.computer.file(absPath);
 		if (!file) {
-			process.write(2, `File ${filePath} doesn't exist`);
+			process.write(2, `File ${absPath} doesn't exist`);
 			exitCode = EXIT_CODES.GENERAL_ERROR;
 			continue;
 		}

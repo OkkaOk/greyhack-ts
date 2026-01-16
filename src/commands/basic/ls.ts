@@ -73,14 +73,14 @@ command.run = function (args, options, process) {
 		lines.push(line);
 	}
 
-	function addFiles(folder: GreyHack.File, depth: number) {
+	function addFolder(folder: GreyHack.File, depth: number) {
 		for (const subFolder of folder.getFolders()!) {
 			if (subFolder.name![0] === "." && !showHidden)
 				continue;
 
 			addLine(subFolder, depth);
 			if ("recursive" in options)
-				addFiles(subFolder, depth + 1);
+				addFolder(subFolder, depth + 1);
 		}
 
 		for (const file of folder.getFiles()!) {
@@ -102,13 +102,13 @@ command.run = function (args, options, process) {
 		const file = process.resources[fd].file!;
 		process.close(fd);
 
-		if (!file.isFolder()) {
-			process.write(1, filePath);
-			continue;
-		}
-
 		lines = [];
-		addFiles(file, 0);
+		
+		if (!file.isFolder())
+			addLine(file, 0);
+		else
+			addFolder(file, 0);
+
 		if (filePaths.length > 1)
 			process.write(1, filePath + ":");
 		if (lines.length > 1)

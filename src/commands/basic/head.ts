@@ -62,7 +62,7 @@ command.run = function (args, options, process) {
 		const fileName = basename(absPath);
 		const fd = process.open(absPath, "r");
 		if (!fd) {
-			exitCode = EXIT_CODES.GENERAL_ERROR;
+			exitCode = EXIT_CODES.MISUSE;
 			continue;
 		}
 

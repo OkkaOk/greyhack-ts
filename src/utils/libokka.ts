@@ -240,7 +240,7 @@ export function resolvePath(basePath: string, relativePath?: string): string {
 	}
 
 	for (let i = currParts.length - 1; i >= 0; i--) {
-		if (currParts[i] === "") currParts.remove(i);
+		if (!currParts[i]) currParts.remove(i);
 	}
 
 	return "/" + currParts.join("/");
@@ -304,25 +304,6 @@ export function getDays(dateStr = ""): number {
 	return Math.round(days);
 }
 
-type FormatSettings = {
-	align?: "left" | "center" | "right",
-	spacing?: number,
-	joinLines?: boolean
-	replacer?: Record<string, string>,
-}
-
-type FormatSettingsJoined = {
-	joinLines: true,
-} & FormatSettings
-
-function test(settings: FormatSettingsJoined): string;
-function test(settings: FormatSettings): string[];
-function test(settings: FormatSettings | FormatSettingsJoined): string[] | string {
-	return ""
-}
-
-const asd = test({ joinLines: false })
-
 export function formatColumnsf(rows: string[], align: "left" | "center" | "right", joinLines?: false, replacer?: Record<string, string>, spacing?: number): string[];
 export function formatColumnsf(rows: string[], align: "left" | "center" | "right", joinLines: true, replacer?: Record<string, string>, spacing?: number): string;
 export function formatColumnsf(
@@ -337,7 +318,7 @@ export function formatColumnsf(
 	const longestStrings: number[] = [];
 
 	for (const line of rows) {
-		const values = line.removeTags().split(" ");
+		const values = line.removeTags().split("\\s");
 
 		for (let i = 0; i < values.length; i++) {
 			if (i >= longestStrings.length) longestStrings.push(0);
@@ -350,7 +331,7 @@ export function formatColumnsf(
 
 	const newLines: string[] = [];
 	for (const line of rows) {
-		const values = line.split(" ");
+		const values = line.split("\\s");
 
 		for (let i = 0; i < values.length; i++) {
 			const padding = longestStrings[i] - values[i].removeTags().length;
@@ -375,8 +356,8 @@ export function formatColumnsf(
 			newLine = newLine.replace(key, replacer[key]);
 		}
 
-		if (!("IS_GREYBEL" in globals))
-			newLine = "<mspace=0.65em>" + newLine;
+		// if (!("IS_GREYBEL" in globals))
+		// 	newLine = "<mspace=0.65em>" + newLine;
 
 		newLines.push(newLine);
 	}

@@ -103,10 +103,10 @@ export class Process {
 	/** Redirects `oldFd` to `newFd`. Basically `dup()` and `dup2()` from C combined 
 	 * @example process.dup(1, 2) // Now everything written to 2(stderr) will go to 1(stdout)
 	 */
-	dup(oldFd: number, newFd: number): number {
-		if (getType(oldFd) != "number") oldFd = str(oldFd).toInt() as number;
-		if (getType(newFd) != "number") newFd = str(newFd).toInt() as number;
-		if (getType(newFd) != "number") {
+	dup(oldFd: number, newFd?: number): number {
+		if (!isType(oldFd, "number")) oldFd = str(oldFd).toInt() as number;
+		if (!isType(newFd, "number")) newFd = str(newFd).toInt() as number;
+		if (!isType(newFd, "number")) {
 			newFd = this.nextFd;
 			this.nextFd += 1;
 		}

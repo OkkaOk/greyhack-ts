@@ -87,7 +87,7 @@
 // };
 // let { d, e } = o;
 class Test {
-	private _myVal = 0
+	private _myVal = 0;
 	constructor(aa: any) {
 	}
 
@@ -99,20 +99,28 @@ class Test {
 
 	}
 }
-const aa = new Test(userInput)
+const aa = new Test(userInput);
 
 aa.myFunc("asd", "aaa", "asd");
 
-function myfunc() {
-	return 5;
+function outerFunc() {
+	let counter = 0;
+	function innerFunc() {
+		counter += 1;
+	}
+
+	innerFunc();
+	print(counter);
 }
 
-type MyType = { myVal?: number }
-const myObj: MyType = {
+outerFunc();
 
-}
+const myObj = {
+	comp: getShell().hostComputer
+};
 
-print(myObj.myVal)
+const devs = myObj.comp.networkDevices();
 
-myObj.myVal = 4
+include("Asd");
 
+const asd = Math.random() < 0.5 ? print("yes") : print("no")

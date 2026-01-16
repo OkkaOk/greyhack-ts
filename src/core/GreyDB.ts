@@ -354,11 +354,11 @@ export class GreyDB<Schema extends DBSchema> {
 			binaryCode
 		].join(char(10)));
 
-		for (const _srcFile of srcFiles) {
+		for (const srcFile of srcFiles) {
 			// Some bug in the game causes this to fail because it statically tries to import code there even though it's a string literal and not a call
 			// This is a workaround which tricks it not to call it during compile
 			const importCodeStr = "import" + "_" + "code";
-			finalFileContent.push(`${importCodeStr}("${_srcFile.path()}")`);
+			finalFileContent.push(`${importCodeStr}("${srcFile.path()}")`);
 		}
 
 		finalFile.setContent(finalFileContent.join(char(10)));
