@@ -24,7 +24,7 @@ print = (value: any, replaceText = false) => {
 		// A bit spaghetti
 		if (value.indexOf("<color=red>") == 0) {
 			fd = 2;
-			value = value.replace("<\/?color[^>]*>", "");
+			value = value.replace(/<\/?color[^<>]*>/, ""); // Remove color tags
 		}
 
 		if (replaceText) gco.fluxShell.activeProcesses[-1].flush(fd);
@@ -386,7 +386,7 @@ export class FluxShell {
 			}
 
 			if (!command.file!.hasPermission("x")) {
-				child.parent.write(2, command.file?.path() + " is not an executable file.");
+				child.parent.write(2, "You don't have permission to execute that program");
 				return EXIT_CODES.CMD_NOT_EXECUTABLE;
 			}
 
@@ -479,15 +479,15 @@ export class FluxShell {
 				nextToken = pipeline.tokens[0];
 
 			let newFd: string | number = "";
-			if (token.isMatch("^\d?>>$")) newFd = token.split(">>")[0].toInt();
-			if (isType(newFd, "string") && token.isMatch("^\d?>$")) newFd = token.split(">")[0].toInt();
-			if (isType(newFd, "string") && token.isMatch("^\d?>&\d$")) newFd = token.split(">&")[0].toInt();
+			if (token.isMatch(/^\d?>>$/)) newFd = token.split(">>")[0].toInt();
+			if (isType(newFd, "string") && token.isMatch(/^\d?>$/)) newFd = token.split(">")[0].toInt();
+			if (isType(newFd, "string") && token.isMatch(/^\d?>&\d$/)) newFd = token.split(">&")[0].toInt();
 			if (isType(newFd, "string")) newFd = 1;
 
 			// TODO: Refactor
 
 			// Handle combined >&file or &>file
-			if (token.isMatch("^>&\S+$") || token.isMatch("^&>\S+$")) {
+			if (token.isMatch(/^>&\S+$/) || token.isMatch(/^&>\S+$/)) {
 				const fd = currStage.process.open(slice(token, 2), "w");
 				if (!fd) {
 					currStage.invalid = true;
@@ -512,7 +512,7 @@ export class FluxShell {
 				currStage.process.dup(fd, 2)
 			}
 			// Handle fd>&fd (e.g. 2>&1)
-			else if (token.isMatch("^\d?>&\d$")) {
+			else if (token.isMatch(/^\d?>&\d$/)) {
 				let oldFd = token.split(">&")[1].toInt();
 				if (isType(oldFd, "string")) oldFd = 1;
 
@@ -520,7 +520,7 @@ export class FluxShell {
 				if (res === -1) currStage.invalid = true;
 			}
 			// Handle append: fd>> file
-			else if (token.isMatch("^\d?>>$") && nextToken) {
+			else if (token.isMatch(/^\d?>>$/) && nextToken) {
 				pipeline.tokens.pull(); // Consume the nextToken
 				const fd = currStage.process.open(nextToken, "rw");
 				if (!fd) {
@@ -531,7 +531,7 @@ export class FluxShell {
 				currStage.process.dup(fd, newFd);
 			}
 			// Handle truncate: fd> file
-			else if (token.isMatch("^\d?>$") && nextToken) {
+			else if (token.isMatch(/^\d?>$/) && nextToken) {
 				pipeline.tokens.pull(); // Consume the nextToken
 				const fd = currStage.process.open(nextToken, "w");
 				if (!fd) {

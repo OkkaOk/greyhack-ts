@@ -20,7 +20,7 @@ const command = new Command({
 
 command.run = function (args, _options, process) {
 	const session = FluxCore.currSession();
-	const procs = slice(session.computer.showProcs().split("\\n"), 1);
+	const procs = slice(session.computer.showProcs().split(/\n/), 1);
 	const processes: Record<string, string> = {};
 	for (const item of procs) {
 		const parts = item.split(" ");

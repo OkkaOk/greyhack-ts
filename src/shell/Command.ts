@@ -52,7 +52,7 @@ export class Command<T extends object = any> implements CommandData {
 	category: CommandCategory;
 	arguments: CommandArgument[];
 	options: CommandOption[];
-	subcommands: Command[];
+	subcommands: Command<T>[];
 	requirements: Record<CommandRunRequirement, boolean> | null;
 	valid: boolean;
 	requiredArgCount: number;
@@ -68,6 +68,7 @@ export class Command<T extends object = any> implements CommandData {
 
 	constructor(data: CommandData, fullName?: string) {
 		this.subcommands = [];
+		this.funcs = {} as any;
 		data = this.fill(data);
 
 		this.name = data.name;
@@ -77,7 +78,6 @@ export class Command<T extends object = any> implements CommandData {
 		this.arguments = data.arguments!;
 		this.options = data.options!;
 		this.examples = [];
-		this.funcs = {} as any;
 
 		this.requirements = null;
 		if (data.requirements)
@@ -317,6 +317,7 @@ export class Command<T extends object = any> implements CommandData {
 		for (const subcommandData of data.subcommands) {
 			const subFullData = this.fillSubCommandData(subcommandData, data);
 			const subcommand = new Command(subFullData, `${this.fullName} ${subFullData.name}`);
+			subcommand.funcs = this.funcs;
 			this.subcommands.push(subcommand);
 		}
 

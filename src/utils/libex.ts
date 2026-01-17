@@ -236,7 +236,7 @@ export class Libex {
 		const content = file.getContent();
 		if (!content) return;
 
-		const lines = content.split("\\n");
+		const lines = content.split(/\n/);
 		for (const line of lines) {
 			const parts = line.split(":");
 			if (!parts || parts.length < 2) continue;

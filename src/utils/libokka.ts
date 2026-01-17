@@ -51,7 +51,7 @@ String.prototype.format = function (...formats) {
 	let thisString = this as string;
 	if (!formats.length) return thisString;
 
-	const matches = this.matches("%[-.]?\\w+");
+	const matches = this.matches(/%[-.]?\w+/);
 
 	for (const format of matches.values() as string[]) {
 		let length: string | number = 0;
@@ -93,7 +93,7 @@ String.prototype.format = function (...formats) {
 };
 
 String.prototype.removeTags = function () {
-	return this.replace("<[^<>]+>", "");
+	return this.replace(/<[^<>]+>/, "");
 };
 
 Number.prototype.toFixed = function (fractionDigits) {
@@ -318,7 +318,7 @@ export function formatColumnsf(
 	const longestStrings: number[] = [];
 
 	for (const line of rows) {
-		const values = line.removeTags().split("\\s");
+		const values = line.removeTags().split(/\s/);
 
 		for (let i = 0; i < values.length; i++) {
 			if (i >= longestStrings.length) longestStrings.push(0);
@@ -331,7 +331,7 @@ export function formatColumnsf(
 
 	const newLines: string[] = [];
 	for (const line of rows) {
-		const values = line.split("\\s");
+		const values = line.split(/\s/);
 
 		for (let i = 0; i < values.length; i++) {
 			const padding = longestStrings[i] - values[i].removeTags().length;

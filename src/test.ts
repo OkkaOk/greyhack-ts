@@ -1,6 +1,6 @@
 // Regex usage
-// s2.matches(/World/);
-// /World/.test(s2);
+// const s1 = "Hello World";
+// s1.matches(/World/);
 
 // const obj1 = { a: 1, b: 2 };
 
@@ -94,14 +94,8 @@ class Test {
 	get myVal() {
 		return this._myVal * 2;
 	}
-
-	myFunc(...vals: any[]): any {
-
-	}
 }
 const aa = new Test(userInput);
-
-aa.myFunc("asd", "aaa", "asd");
 
 function outerFunc() {
 	let counter = 0;
@@ -114,13 +108,3 @@ function outerFunc() {
 }
 
 outerFunc();
-
-const myObj = {
-	comp: getShell().hostComputer
-};
-
-const devs = myObj.comp.networkDevices();
-
-include("Asd");
-
-const asd = Math.random() < 0.5 ? print("yes") : print("no")

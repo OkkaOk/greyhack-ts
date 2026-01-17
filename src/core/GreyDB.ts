@@ -504,7 +504,7 @@ export class GreyDB<Schema extends DBSchema> {
 
 			if (tables[tableName]?.funcs) {
 				for (const func of tables[tableName].funcs) {
-					table.rows = Object.assign(table.rows, func());
+					table.rows = table.rows.concat(func());
 				}
 			}
 

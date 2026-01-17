@@ -11,7 +11,7 @@ const command = new Command({
 
 command.run = function (_args, _options, process) {
 	const session = FluxCore.currSession();
-	const procs = session.computer.showProcs().split("\\n");
+	const procs = session.computer.showProcs().split(/\n/);
 	process.write(1, formatColumnsf(procs, "left", false, {}, 3));
 	
 	return EXIT_CODES.SUCCESS;

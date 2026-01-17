@@ -144,7 +144,7 @@ export class Process {
 
 			let result = session.computer.touch(parentPath(filePath), fileName);
 			if (isType(result, "string")) {
-				if (result.indexOf("Can't create file") !== null && result.indexOf(".") != null) result = result.split("\.")[-1].trim();
+				if (result.indexOf("Can't create file") !== null && result.indexOf(".") != null) result = result.split(/\./)[-1].trim();
 				this.write(2, `Failed to create file ${filePath}: ${result}`);
 				return null;
 			}

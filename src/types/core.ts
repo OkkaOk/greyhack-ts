@@ -34,9 +34,7 @@ export type DBSchema = {
 		key: string;
 		value: string | number;
 	};
-	secrets: {
-
-	}
+	secrets: Record<string, string>
 };
 
 export type FluxCoreGCO = {

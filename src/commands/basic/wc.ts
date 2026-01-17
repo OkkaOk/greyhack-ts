@@ -106,7 +106,7 @@ command.run = function (args, options, process) {
 			if (!line) continue;
 			const lineLength = line.length;
 
-			wordCount += line.matches("\\w+").size;
+			wordCount += line.matches(/\w+/).size;
 			charCount += lineLength;
 			if (lineLength > longest) longest = lineLength;
 		}
