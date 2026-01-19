@@ -1,5 +1,4 @@
-import { FluxCore } from "../core/FluxCore";
-import { basename } from "../utils/libokka";
+import { basename, resolvePath } from "../utils/libokka";
 import { FluxShell } from "./FluxShell";
 import { Stream } from "./Stream";
 
@@ -130,10 +129,17 @@ export class Process {
 	open(filePath: string, mode: "r" | "w" | "rw", ignoreType = false): number | null {
 		const fd = this.nextFd;
 
-		const session = FluxCore.currSession();
+		let computer = getShell().hostComputer;
+		if (FluxShell.raw.core) {
+			const session = FluxShell.raw.core.currSession();
+			filePath = session.resolvePath(filePath);
+			computer = session.computer;
+		}
+		else {
+			filePath = resolvePath(currentPath(), filePath);
+		}
 
-		filePath = session.resolvePath(filePath);
-		let file = session.computer.file(filePath);
+		let file = computer.file(filePath);
 		const fileName = basename(filePath);
 
 		if (!file) {
@@ -142,14 +148,14 @@ export class Process {
 				return null;
 			}
 
-			let result = session.computer.touch(parentPath(filePath), fileName);
+			let result = computer.touch(parentPath(filePath), fileName);
 			if (isType(result, "string")) {
 				if (result.indexOf("Can't create file") !== null && result.indexOf(".") != null) result = result.split(/\./)[-1].trim();
 				this.write(2, `Failed to create file ${filePath}: ${result}`);
 				return null;
 			}
 
-			file = session.computer.file(filePath)!;
+			file = computer.file(filePath)!;
 		}
 
 		if (mode === "r" || mode === "rw") {

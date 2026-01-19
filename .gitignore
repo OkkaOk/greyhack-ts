@@ -2,3 +2,5 @@
 node_modules
 out
 build
+src/test.ts
+src/test2.ts

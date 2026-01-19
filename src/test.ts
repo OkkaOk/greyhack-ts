@@ -2,35 +2,6 @@
 // const s1 = "Hello World";
 // s1.matches(/World/);
 
-// const obj1 = { a: 1, b: 2 };
-
-// const weird = {
-//   len() { return 0; },
-//   length: "oops"
-// };
-
-// const s1 = "asdasd"
-// if (typeof s1 === "string") {
-//   s1.length;
-// }
-
-// const obj = { mykey: 4 }
-
-// const obj3 = {
-// 	value: "lolvalue",
-// 	"0": "This will be replaced",
-// 	...obj,
-// 	...{ asd: 5, ...{ btest: 4 } },
-// 	// ...(maybe ? { asd: 5, ...{ atest: 4 } } : {}),
-// 	...[1,2,3],
-// 	what: (val: string) => {
-// 		print(val)
-// 	},
-// 	whoo: function() {
-// 		this.btest
-// 	}
-// };
-
 // type Person = { name: string, gender: string, age: number }
 // const arr: Person[] = [
 // 	{ name: "kimmo", gender: "male", age: 60 },
@@ -54,24 +25,10 @@
 // print(arr.every(person => person.name === "ari"))
 // print(arr.filter(person => person.age > 70))
 
-// function myExisting(o: any) {
-
-// }
-// myExisting({
-// 	hahaNo() {
-// 		return 6
-// 	},
-// 	hahaStillNo: function() {
-// 		return 6
-// 	}
-// })
-
 // const weirdArr = [
 // 	(() => 5),
 // 	(() => "very weird"),
 // ] as const
-
-// const myarr = [1,2,3,4,...[5,6,7,...[8,9,10,11,12,...[13,14,15],16,17]]]
 
 // const res = weirdArr[1]();
 
@@ -86,25 +43,42 @@
 //   f: "bar",
 // };
 // let { d, e } = o;
-class Test {
-	private _myVal = 0;
-	constructor(aa: any) {
-	}
 
-	get myVal() {
-		return this._myVal * 2;
-	}
+// class Test {
+// 	private _myVal = 0;
+// 	constructor(a?: any) {
+// 	}
+
+// 	get myVal() {
+// 		return this._myVal * 2;
+// 	}
+// }
+// const aa = new Test(userInput);
+
+// function outerFunc() {
+// 	let counter = 0;
+// 	function innerFunc() {
+// 		counter += 1;
+// 	}
+
+// 	innerFunc();
+// 	print(counter);
+// }
+
+// outerFunc();
+
+const myArr = [1, 2, 3] as const
+const myArr2 = [1, 2, 3]
+// // const ab = new Test(...myArr, 1,3,6,72,1);
+
+function asdasd(a: any, b = 5, c: any, ...rest: any[]) {
+
 }
-const aa = new Test(userInput);
 
-function outerFunc() {
-	let counter = 0;
-	function innerFunc() {
-		counter += 1;
-	}
+// let uninitialized: string;
+Math.max(1,2,3,...myArr, 1, 2, 3)
+const result = Math.max(...[1, 2, 3, 4, 5], ...myArr2, 1,2,3, ...myArr, 1,2,3, ...myArr2)
+const result2 = Math.max(1, 2, 3, 4, 5)
+asdasd(1,...myArr,3, ...myArr2, ...myArr2);
 
-	innerFunc();
-	print(counter);
-}
-
-outerFunc();
+const myArr3 = [1,2,3].concat([4,5,6], [7,8])

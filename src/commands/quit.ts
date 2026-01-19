@@ -5,7 +5,7 @@ import { EXIT_CODES, FluxShell } from "../shell/FluxShell";
 const command = new Command({
 	name: "quit",
 	description: "Quits the session",
-	category: "System Management",
+	category: "Other",
 	options: [
 		{
 			name: "all",

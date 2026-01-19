@@ -18,7 +18,8 @@
 	],
 	"license": "MIT",
 	"scripts": {
-		"build": "node index.js"
+		"build": "node index.js",
+		"transpile": "bun ~/Projects/TypeScript/grey-ts/src/index.ts transpile"
 	},
 	"type": "module",
 	"dependencies": {

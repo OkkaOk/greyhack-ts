@@ -66,13 +66,16 @@ export class Command<T extends object = any> implements CommandData {
 	run?: (args: string[], options: RunFlags, process: Process) => ExitCodeType;
 	funcs: T;
 
-	constructor(data: CommandData, fullName?: string) {
+	constructor(data: CommandData, parent?: Command) {
+		if (!data.options) data.options = [];
+		if (!data.arguments) data.arguments = [];
+		if (!data.subcommands) data.subcommands = [];
+		
 		this.subcommands = [];
 		this.funcs = {} as any;
-		data = this.fill(data);
 
 		this.name = data.name;
-		this.fullName = fullName ?? data.name;
+		this.fullName = data.name;
 		this.description = data.description;
 		this.category = data.category;
 		this.arguments = data.arguments!;
@@ -121,6 +124,17 @@ export class Command<T extends object = any> implements CommandData {
 				flags: ["-h", "--help"],
 				description: "Shows help for this command",
 			});
+		}
+		
+		if (parent) {
+			this.funcs = parent.funcs;
+			this.fullName = `${parent.fullName} ${this.name}`;
+		}
+
+		for (const subcommandData of data.subcommands) {
+			const subFullData = this.fillSubCommandData(subcommandData, data);
+			const subcommand = new Command(subFullData, this);
+			this.subcommands.push(subcommand);
 		}
 
 		const isSubCommand = this.fullName != this.name;
@@ -307,21 +321,6 @@ export class Command<T extends object = any> implements CommandData {
 		}
 
 		return null;
-	}
-
-	private fill(data: CommandData): CommandData {
-		if (!data.options) data.options = [];
-		if (!data.arguments) data.arguments = [];
-		if (!data.subcommands) data.subcommands = [];
-
-		for (const subcommandData of data.subcommands) {
-			const subFullData = this.fillSubCommandData(subcommandData, data);
-			const subcommand = new Command(subFullData, `${this.fullName} ${subFullData.name}`);
-			subcommand.funcs = this.funcs;
-			this.subcommands.push(subcommand);
-		}
-
-		return data;
 	}
 
 	private fillSubCommandData(subData: SubcommandData, data: CommandData): CommandData {

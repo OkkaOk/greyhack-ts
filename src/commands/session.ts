@@ -5,7 +5,12 @@ import { EXIT_CODES } from "../shell/FluxShell";
 import type { Process } from "../shell/Process";
 import { formatColumnsf } from "../utils/libokka";
 
-const command = new Command({
+interface Ext {
+	refreshSessions(): void;
+	listSessions(process: Process): boolean;
+}
+
+const command = new Command<Ext>({
 	name: "session",
 	description: "Manage sessions",
 	category: "Networking",
@@ -51,7 +56,7 @@ const command = new Command({
 	]
 });
 
-function refreshSessions() {
+command.funcs.refreshSessions = function () {
 	for (const session of FluxCore.getSessions()) {
 		if (!session.metax) continue;
 
@@ -62,10 +67,10 @@ function refreshSessions() {
 			FluxCore.createSession(rshell, false, true);
 		}
 	}
-}
+};
 
-function listSessions(process: Process): boolean {
-	refreshSessions();
+command.funcs.listSessions = function (process) {
+	this.refreshSessions();
 
 	if (!FluxCore.raw.sessions.size) {
 		process.write(1, "No sessions found!");
@@ -95,15 +100,15 @@ function listSessions(process: Process): boolean {
 
 	process.write(1, formatColumnsf(out, "left", false, { "§": " " }));
 	return true;
-}
+};
 
 // Use
 command.subcommands[0].run = function (args, _options, process) {
-	refreshSessions();
+	this.funcs.refreshSessions();
 
 	let index: string | number = 0;
 	if (!args.length) {
-		const res = listSessions(process);
+		const res = this.funcs.listSessions(process);
 		if (!res) return EXIT_CODES.GENERAL_ERROR;
 
 		index = userInput("Which session to use > ").toInt();
@@ -131,7 +136,7 @@ command.subcommands[0].run = function (args, _options, process) {
 
 // Kill
 command.subcommands[1].run = function (args, options, process) {
-	refreshSessions();
+	this.funcs.refreshSessions();
 
 	if (options["all"]) {
 		for (const session of FluxCore.getSessions()) {
@@ -144,7 +149,7 @@ command.subcommands[1].run = function (args, options, process) {
 
 	let index: string | number = 0;
 	if (!args.length) {
-		const res = listSessions(process);
+		const res = this.funcs.listSessions(process);
 		if (!res) return EXIT_CODES.GENERAL_ERROR;
 
 		index = userInput("Which session to kill > ").toInt();
@@ -175,7 +180,7 @@ command.subcommands[1].run = function (args, options, process) {
 
 // List
 command.subcommands[2].run = function (_args, _options, process) {
-	listSessions(process);
+	this.funcs.listSessions(process);
 	return EXIT_CODES.SUCCESS;
 };
 
