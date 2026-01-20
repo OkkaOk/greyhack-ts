@@ -90,17 +90,18 @@ class DBTable implements DBTableType {
 		this.rows = [];
 		this.funcs = [];
 		this.primaryKey = primaryKey;
-		this.kIndex = {} as any;
+		this.kIndex = {};
 	}
 
 	setIndex(row: any, index: number) {
 		for (const key of Object.keys(row)) {
 			if (!this.kIndex[key]) this.kIndex[key] = {};
+			
+			const colValue = row[key];
+			if (!this.kIndex[key][colValue])
+				this.kIndex[key][colValue] = [];
 
-			if (!this.kIndex[key][row[key]])
-				this.kIndex[key][row[key]] = [];
-
-			this.kIndex[key][row[key]].push(index);
+			this.kIndex[key][colValue].push(index);
 		}
 	}
 
@@ -206,14 +207,13 @@ export class GreyDB<Schema extends DBSchema> {
 	}
 
 	insert<Name extends keyof Schema>(tableName: Name, row: Schema[Name]) {
-		this.insertRaw(tableName, row);
-
 		const primaryKey = this.tables[tableName].primaryKey;
 		if (primaryKey && !Object.hasOwn(row, primaryKey)) {
 			this.print(`<color=red>Given row for table '${tableName as string}' doesn't have the primary key: ${primaryKey as string}`, 1);
 			return false;
 		}
-
+		
+		this.insertRaw(tableName, row);
 		return true;
 	}
 

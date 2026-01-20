@@ -32,7 +32,6 @@ command.run = function (args, _options, process) {
 
 	cd(newPath);
 	session.workingDir = newPath;
-	FluxCore.raw.env["PWD"] = newPath;
 
 	return EXIT_CODES.SUCCESS;
 };

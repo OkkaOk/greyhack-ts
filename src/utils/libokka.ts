@@ -96,6 +96,19 @@ String.prototype.removeTags = function () {
 	return this.replace(/<[^<>]+>/, "");
 };
 
+String.prototype.rainbow = function (rainbowLength = 0, offset = 0) {
+	const thisStr = this as string;
+	if (!thisStr.length) return "";
+	if (rainbowLength <= 0) rainbowLength = thisStr.length;
+
+	let out = "";
+	for (let i = 0; i < thisStr.length; i++) {
+		const color = valueToColor((i + offset) % rainbowLength, rainbowLength);
+		out = out + thisStr[i].color(color);
+	}
+	return out;
+}
+
 Number.prototype.toFixed = function (fractionDigits) {
 	const thisNum = this as number;
 	fractionDigits = Math.floor(fractionDigits);
@@ -117,6 +130,40 @@ Number.prototype.toFixed = function (fractionDigits) {
 
 	return strValue;
 };
+
+/** Map a number from 0-range to hex color */
+export function valueToColor(value: number, range: number) {
+	const hue = value * (360 / range);
+	const rgb = hsvToRGB(hue, 1, 1);
+	return rgbToHex(rgb[0], rgb[1], rgb[2]);
+}
+
+export function hsvToRGB(h: number, s: number, v: number): [number, number, number] {
+	const c = v * s;
+	const x = c * (1 - Math.abs((h/60 % 2) - 1));
+	const m = v - c;
+
+	if (h < 60) return [(c+m)*255, (x+m)*255, (0+m)*255];
+	if (h < 120) return [(x+m)*255, (c+m)*255, (0+m)*255];
+	if (h < 180) return [(0+m)*255, (c+m)*255, (x+m)*255];
+	if (h < 240) return [(0+m)*255, (x+m)*255, (c+m)*255];
+	if (h < 300) return [(x+m)*255, (0+m)*255, (c+m)*255];
+	return [(c+m)*255, (0+m)*255, (x+m)*255];
+}
+
+export function rgbToHex(red: number, green: number, blue: number) {
+	function toHex(num: number) {
+		if (num > 255) num = 255;
+		if (num < 0) num = 0;
+
+		const digits = "0123456789abcdef";
+		const hi = Math.floor(num / 16);
+		const lo = num % 16;
+		return digits[hi] + digits[lo];
+	}
+
+	return "#" + toHex(Math.floor(red)) + toHex(Math.floor(green)) + toHex(Math.floor(blue));
+}
 
 export function updateLib(libPath: string): GreyHack.LibTypes[keyof GreyHack.LibTypes] | null {
 	let lib = includeLib(libPath);

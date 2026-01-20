@@ -116,6 +116,27 @@ export class FluxShell {
 	}
 
 	static expandVariables(input: string): string {
+		if (!input.length) return "";
+
+		const varMatches = input.matches(/\$[^"" ]+/);
+		Object.assign(varMatches, input.matches(/\$\{[^}]+\}/));
+
+		for (const index of Object.keys(varMatches)) {
+			// Escaped
+			if (index > 0 && input[index - 1] === "\\") {
+				input = slice(input, 0, index - 1) + slice(input, index);
+				continue;
+			}
+
+			let varName = slice(varMatches[index], 1); // Skip $ character
+			if (varName[0] === "{" && varName[-1] === "}")
+				varName = slice(varName, 1, -1);
+
+			if (!(varName in this.raw.env)) continue;
+
+			input = slice(input, 0, index) + this.raw.env[varName] + slice(input, index + varMatches[index].length);
+		}
+
 		return input;
 	}
 
@@ -124,10 +145,24 @@ export class FluxShell {
 	}
 
 	static expandTilde(tokens: ExtToken[]): ExtToken[] {
+		let home = homeDir();
+		if (this.raw.core) {
+			home = this.raw.core.currSession().homeDir();
+		}
+
+		for (const token of tokens) {
+			if (token.value[0] === "~") {
+				token.value = home + slice(token.value, 1);
+			}
+		}
+
 		return tokens;
 	}
 
 	static expandParameters(tokens: ExtToken[]): ExtToken[] {
+		for (const token of tokens) {
+			token.value = this.expandVariables(token.value);
+		}
 		return tokens;
 	}
 
@@ -185,7 +220,9 @@ export class FluxShell {
 		if (!input.length) return [];
 
 		if (input.indexOf("!!") != null && this.raw.history.length) {
-
+			const lastCmd = this.raw.history[-1];
+			input = input.replace("!!", lastCmd);
+			print(input);
 		}
 
 		let inQuotes = false;
@@ -267,12 +304,7 @@ export class FluxShell {
 		extTokens = this.expandFilename(extTokens);
 		extTokens = this.removeQuotes(extTokens);
 
-		const finalTokens: string[] = [];
-		for (const extToken of extTokens) {
-			finalTokens.push(extToken.value);
-		}
-
-		return finalTokens;
+		return extTokens.map(ext => ext.value);
 	}
 
 	static getCommand(commandName: string, args: string[]): Command {
@@ -304,14 +336,14 @@ export class FluxShell {
 				description: "",
 				category: "Other", // Just a random one
 				nonFlux: true,
-			})
+			});
 
 			if (!file) return command;
 
 			command.name = file.name!;
 			command.valid = true;
 			command.file = file;
-			command.run = function(args, _opts, process) {
+			command.run = function (args, _opts, process) {
 				const result = shell!.launch(file!.path(), args.join(" "));
 				if (isType(result, "string")) {
 					process.write(2, "Failed to launch program: " + result);
@@ -319,7 +351,7 @@ export class FluxShell {
 				}
 
 				return EXIT_CODES.SUCCESS;
-			}
+			};
 
 			return command;
 		}
@@ -401,8 +433,8 @@ export class FluxShell {
 			}
 
 			if (this.raw.core && !this.raw.core.raw.nonFluxWarned) {
-				child.parent.write(1, "<color=yellow>This command/binary is not a <b>Flux</b> command and won't have benefits suchs as piping and redirecting (though xargs should still work).")
-				this.raw.core.raw.nonFluxWarned = true
+				child.parent.write(1, "<color=yellow>This command/binary is not a <b>Flux</b> command and won't have benefits suchs as piping and redirecting (though xargs should still work).");
+				this.raw.core.raw.nonFluxWarned = true;
 			}
 
 			return command.run(args, {}, child.parent);
@@ -423,7 +455,7 @@ export class FluxShell {
 		}
 
 		const overrideArgs = Object.hasOwn(options, "overrideArgs");
-		
+
 		if (args.length < command.requiredArgCount && !overrideArgs && !command.acceptsStdin) {
 			child.write(2, `Not enough arguments. Requires ${command.requiredArgCount}, received ${args.length}`);
 			child.write(1, "Usage: " + command.getUsage());
@@ -456,7 +488,7 @@ export class FluxShell {
 				tokens: [],
 				process: FluxShell.mainProcess().clone(),
 				invalid: false,
-			}
+			};
 		}
 
 		let currStage = createStage();
@@ -464,9 +496,9 @@ export class FluxShell {
 		const expandedTokens: Record<string, boolean> = {};
 
 		// Recursively do alias expansion for the first token in the pipeline
-		let firstToken = pipeline.tokens[0]
+		let firstToken = pipeline.tokens[0];
 		while (this.raw.aliases.hasIndex(firstToken) && !expandedTokens.hasIndex(firstToken)) {
-			const aliasTokens = this.tokenize(this.raw.aliases[firstToken])
+			const aliasTokens = this.tokenize(this.raw.aliases[firstToken]);
 			pipeline.tokens = aliasTokens.concat(slice(pipeline.tokens, 1));
 			expandedTokens[firstToken] = true;
 			firstToken = pipeline.tokens[0];
@@ -508,8 +540,8 @@ export class FluxShell {
 				}
 
 				currStage.process.flush(fd); // Truncate
-				currStage.process.dup(fd, 1)
-				currStage.process.dup(fd, 2)
+				currStage.process.dup(fd, 1);
+				currStage.process.dup(fd, 2);
 			}
 			// Handle fd>&fd (e.g. 2>&1)
 			else if (token.isMatch(/^\d?>&\d$/)) {
@@ -606,7 +638,7 @@ export class FluxShell {
 				id: pipelines.length,
 				condition: op,
 				stages: [],
-			})
+			});
 		}
 
 		let prevCondition: Pipeline["condition"] = null;
@@ -644,12 +676,12 @@ export class FluxShell {
 			// There was a pipeline before this (separated by ; || &&)
 			if (this.raw.prevPipeline) {
 				if (pipeline.condition === "OR" && this.raw.env["?"] === 0) {
-					this.raw.pipelines.pull()
+					this.raw.pipelines.pull();
 					continue;
 				}
 
 				if (pipeline.condition === "AND" && this.raw.env["?"] !== 0) {
-					this.raw.pipelines.pull()
+					this.raw.pipelines.pull();
 					continue;
 				}
 			}
@@ -697,10 +729,13 @@ export class FluxShell {
 		}
 
 		while (true) {
+			this.raw.env["PWD"] = currentPath();
+
 			let user = activeUser();
 			let currPath = currentPath().replace(homeDir(), "~");
 			let color = "#7fff00";
-			let message = "<b><color=%s>%s</color>:<color=#28A9DB>%s</color>$ ".format(color, user, currPath);
+			let userSymbol = user === "root" ? "#" : "$";
+			let message = `<b><color=${color}>${user}</color>:<color=#28A9DB>${currPath}</color>${userSymbol} `;
 
 			if (this.raw.core) {
 				const session = this.raw.core.currSession();
@@ -713,15 +748,17 @@ export class FluxShell {
 					color = "#FF8800";
 				}
 
+				this.raw.env["PWD"] = session.workingDir;
 				currPath = session.workingDir.replace(session.homeDir(), "~");
-				message = "<b><color=%s>#%d %s@%s</color>:<color=#28A9DB>%s</color>$ ".format(color, this.raw.core.raw.sessionPath.length, user, session.localIp, currPath);
+				userSymbol = user === "root" ? "#" : "$";
+				message = `<b><color=${color}>#${this.raw.core.raw.sessionPath.length} ${user}@${session.localIp}</color>:<color=#28A9DB>${currPath}</color>${userSymbol} `;
 			}
 
 			this.raw.env["USER"] = user;
 
 			const input = userInput(message, false, false, true);
 			this.handleInput(input);
-			
+
 			if (this.raw.core) {
 				this.raw.core.raw.database.save();
 			}

@@ -102,6 +102,8 @@ export class Libex {
 					hasRequirements,
 				};
 
+				FluxCore.raw.database.insert("vulns", vuln);
+
 				vulnerabilities.push(vuln);
 			}
 		}
@@ -244,7 +246,7 @@ export class Libex {
 			const user = parts[0];
 			const hash = parts[1];
 
-			if (networkData[dataKey][user] != "")
+			if (networkData[dataKey][user])
 				continue;
 
 			const deciphered = FluxCore.decipher(hash);

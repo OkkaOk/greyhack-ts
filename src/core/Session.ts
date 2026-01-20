@@ -40,11 +40,16 @@ export class Session {
 		this.isProxy = isProxy;
 		this.id = md5(this.publicIp + this.localIp + this.user + this.isHome + this.isProxy + this.isRshellClient);
 
-		this.workingDir = "/";
+		this.workingDir = "/home/" + this.user;
 
 		this.userLevel = 0;
-		if (this.user == "root") this.userLevel = 2;
-		else if (this.user != "guest") this.userLevel = 1;
+		if (this.user == "root") {
+			this.userLevel = 2;
+			this.workingDir = "/root"
+		}
+		else if (this.user != "guest") {
+			this.userLevel = 1;
+		}
 
 		this.metax = null;
 		this.crypto = null;
@@ -62,7 +67,11 @@ export class Session {
 			this.computer = shell.hostComputer;
 			this.user = username;
 			this.userLevel = 1;
-			if (this.user === "root") this.userLevel = 2;
+			this.workingDir = "/home/" + username;
+			if (this.user === "root") {
+				this.userLevel = 2;
+				this.workingDir = "/root";
+			}
 			return true;
 		}
 

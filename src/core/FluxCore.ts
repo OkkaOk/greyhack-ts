@@ -57,10 +57,6 @@ export class FluxCore {
 		}
 
 		const currSession = this.currSession();
-		if (currSession.workingDir == "/") {
-			currSession.workingDir = currentPath();
-			FluxShell.raw.env["PWD"] = currSession.workingDir;
-		}
 
 		if (currSession.shell) {
 			currSession.loadLibs();
@@ -120,7 +116,6 @@ export class FluxCore {
 			gcosh.env[obj.key] = obj.value;
 		}
 
-		gcosh.env["PWD"] = session.workingDir;
 		gcosh.env["?"] = 0;
 
 		if (!globals.hasIndex("IS_GREYBEL")) {
@@ -303,6 +298,49 @@ export class FluxCore {
 	}
 
 	static printArt() {
+		function addToBuild(current: string, obj: any) {
+			for (const key of Object.keys(obj)) {
+				current += str(key) + str(obj[key]);
+			}
+			return current;
+		}
 
+		let fluxBuild = addToBuild("", globals);
+		fluxBuild = addToBuild(fluxBuild, this);
+		fluxBuild = slice(md5(fluxBuild), 0, 8);
+
+		const quotes = [
+			"In a sea of entropy, Flux is the current",
+			"Life's a buffer — don't overflow it",
+			"0wn the day, one exploit at a time",
+			"Trust no one. Except yourself",
+			"The weakest link is always human",
+			"Hack like no one's watcing",
+			"Exploit today, patch tomorrow"
+		];
+
+		const art = [
+			"――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――",
+			"                          _____  __                                             ",
+			"                        _/ ____\\|  |   __ __ ___  ___                           ",
+			"                        \\   __\\ |  |  |  |  \\\\  \\/  /                           ",
+			"                         |  |   |  |__|  |  / >    <                            ",
+			"                         |__|   |____/|____/ /__/\\__\\                           ",
+			"                                                                                ",
+			`――――――――――――――――――――――――――――――――――( ${fluxBuild} )――――――――――――――――――――――――――――――――――`,
+		];
+
+		for (let i = 0; i < art.length; i++) {
+			art[i] = "<b>" + art[i].rainbow(art[i].length, i * 2);
+		}
+
+		print(art.join(char(10)));
+
+		const dateSegments = currentDate().split(" - ");
+		const dateTime = dateSegments[1].split(":");
+		const hours = dateTime[0].toInt() as number;
+
+		const quote = quotes[hours % quotes.length];
+		print("<color=#73FF00>" + quote.rainbow() + char(10));
 	}
 }

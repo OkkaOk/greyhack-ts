@@ -55,13 +55,13 @@ command.run = function (args, options, process) {
 	let exitCode: ExitCodeType = EXIT_CODES.SUCCESS;
 
 	let lines: string[] = [];
-	function addLine(file: GreyHack.File, depth: number) {
+	function addLine(file: GreyHack.File, depth: number, forceFullPath?: boolean) {
 		let line = "";
 		if ("long" in options)
 			line += `${file.permissions!.color("green")} ${file.owner!.color("#FF9900")} ${file.group.color("#FF9900")} `;
 
 		let text = file.name!;
-		if ("full" in options)
+		if ("full" in options || forceFullPath)
 			text = file.path();
 		else if ("tree" in options)
 			text = "|§".repeatSelf(depth) + text;
@@ -105,14 +105,14 @@ command.run = function (args, options, process) {
 		lines = [];
 		
 		if (!file.isFolder())
-			addLine(file, 0);
+			addLine(file, 0, true);
 		else
 			addFolder(file, 0);
 
 		if (filePaths.length > 1)
 			process.write(1, filePath + ":");
-		if (lines.length > 1)
-			process.write(1, formatColumnsf(lines, "left", true, { "§": " " }));
+
+		process.write(1, formatColumnsf(lines, "left", false, { "§": " " }));
 	}
 
 	return exitCode;

@@ -7,6 +7,7 @@ interface String {
 	format: (...formats: (string | number)[]) => string;
 	color: (color: string) => string;
 	removeTags: () => string;
+	rainbow(rainbowLength?: number, offset?: number): string
 }
 
 interface Number {
