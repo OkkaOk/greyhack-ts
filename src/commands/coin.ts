@@ -95,16 +95,6 @@ const command = new Command<Ext>({
 			name: "list",
 			description: "List global cryptocurrencies",
 		},
-		{
-			name: "test",
-			description: "List global cryptocurrencies",
-			subcommands: [
-				{
-					name: "test2",
-					description: "asd"
-				}
-			]
-		},
 	]
 });
 
@@ -364,11 +354,3 @@ command.subcommands[4].run = function (_args, _options, process) {
 	process.write(1, formatColumns(output.join("\n")));
 	return EXIT_CODES.SUCCESS;
 };
-
-command.subcommands[5].subcommands[0].run = function(args, opts, process) {
-	const wallet = this.funcs.getWallet(process);
-	if (!wallet) return EXIT_CODES.GENERAL_ERROR;
-
-	process.write(1, wallet.getPin())
-	return EXIT_CODES.SUCCESS
-}

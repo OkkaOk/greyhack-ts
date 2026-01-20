@@ -92,8 +92,8 @@ command.run = function (args, _options, process) {
 
 	const categoryCommands: Record<string, Command[]> = {};
 
-	for (const commandName of FluxShell.raw.commands.indexes()) {
-		const command = FluxShell.raw.commands[commandName as string];
+	for (const commandName of Object.keys(FluxShell.raw.commands)) {
+		const command = FluxShell.raw.commands[commandName];
 		if (!categoryCommands.hasIndex(command.category))
 			categoryCommands[command.category] = [];
 
@@ -103,9 +103,14 @@ command.run = function (args, _options, process) {
 	process.write(1, "<size=2em><b><u>Available Commands");
 
 	for (const category of Object.keys(categoryCommands)) {
-		process.write(1, `  <size=1.5em><b><u>${category}`);
+		let indent = "  ";
+		if (category === "None")
+			indent = "";
+		else
+			process.write(1, `${indent}<size=1.5em><b><u>${category}`);
+	
 		for (const command of categoryCommands[category]) {
-			process.write(1, "    <b>%-12s</b> %40".format(command.name, command.description));
+			process.write(1, `${indent}  <b>%-12s</b> %40`.format(command.name, command.description));
 		}
 	}
 

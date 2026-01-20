@@ -87,6 +87,8 @@ export class FluxShell {
 			history: [],
 		};
 
+		const gcosh = gco.fluxShell;
+
 		function printOut() {
 			const data = FluxShell.mainProcess().read(1, true);
 			if (!data) return;
@@ -95,8 +97,8 @@ export class FluxShell {
 
 		function printErr() {
 			let color = "red";
-			if (gco.fluxShell!.settings.hasIndex("errorColor")) {
-				color = gco.fluxShell!.settings.errorColor;
+			if (gcosh.settings.hasIndex("errorColor")) {
+				color = gcosh.settings.errorColor;
 			}
 
 			const lines = FluxShell.mainProcess().read(2);
@@ -723,38 +725,25 @@ export class FluxShell {
 		this.executePipeline();
 	}
 
-	static startInputLoop() {
+	static startInputLoop(getMessageFunc?: () => string) {
 		if (this.raw.pipelines.length) {
 			this.executePipeline();
 		}
 
 		while (true) {
 			this.raw.env["PWD"] = currentPath();
-
-			let user = activeUser();
-			let currPath = currentPath().replace(homeDir(), "~");
-			let color = "#7fff00";
-			let userSymbol = user === "root" ? "#" : "$";
-			let message = `<b><color=${color}>${user}</color>:<color=#28A9DB>${currPath}</color>${userSymbol} `;
+			this.raw.env["USER"] = activeUser();
 
 			if (this.raw.core) {
 				const session = this.raw.core.currSession();
-				user = session.user;
-
-				if (session.isProxy) {
-					color = "#00FFFF";
-				}
-				else if (session.publicIp != this.raw.core.raw.sessionPath[0].publicIp) {
-					color = "#FF8800";
-				}
-
 				this.raw.env["PWD"] = session.workingDir;
-				currPath = session.workingDir.replace(session.homeDir(), "~");
-				userSymbol = user === "root" ? "#" : "$";
-				message = `<b><color=${color}>#${this.raw.core.raw.sessionPath.length} ${user}@${session.localIp}</color>:<color=#28A9DB>${currPath}</color>${userSymbol} `;
+				this.raw.env["USER"] = session.user;
 			}
 
-			this.raw.env["USER"] = user;
+			if (!getMessageFunc)
+				getMessageFunc = this.getUserInputMessage;
+
+			const message = getMessageFunc();
 
 			const input = userInput(message, false, false, true);
 			this.handleInput(input);
@@ -767,5 +756,30 @@ export class FluxShell {
 			if (this.raw.history.length > 30)
 				this.raw.history.pull();
 		}
+	}
+
+	private static getUserInputMessage() {
+		let color = "#7fff00";
+		if (!this.raw.core) {
+			const user = activeUser();
+			const currPath = currentPath().replace(homeDir(), "~");
+			const userSymbol = user === "root" ? "#" : "$";
+			const message = `<b><color=${color}>${user}</color>:<color=#28A9DB>${currPath}</color>${userSymbol} `;
+			return message;
+		}
+
+		const session = this.raw.core.currSession();
+		const user = session.user;
+
+		if (session.isProxy) {
+			color = "#00FFFF";
+		}
+		else if (session.publicIp != this.raw.core.raw.sessionPath[0].publicIp) {
+			color = "#FF8800";
+		}
+
+		const currPath = session.workingDir.replace(session.homeDir(), "~");
+		const userSymbol = user === "root" ? "#" : "$";
+		return `<b><color=${color}>#${this.raw.core.raw.sessionPath.length} ${user}@${session.localIp}</color>:<color=#28A9DB>${currPath}</color>${userSymbol} `;
 	}
 }

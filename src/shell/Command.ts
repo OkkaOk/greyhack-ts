@@ -3,7 +3,7 @@ import { EXIT_CODES } from "./FluxShell";
 import type { Process } from "./Process";
 
 type CommandRunRequirement = "hasShell";
-type CommandCategory = "Hacking" | "Networking" | "System Management" | "Data Operations" | "Other";
+type CommandCategory = "Hacking" | "Networking" | "System Management" | "Data Operations" | "Other" | "None";
 
 type SubcommandData = {
 	name: string;
