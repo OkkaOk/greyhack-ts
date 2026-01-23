@@ -1,16 +1,9 @@
+import type { FluxCoinGlobals } from "../flux-client";
 import { Command } from "../shell/Command";
 import { EXIT_CODES } from "../shell/FluxShell";
 import { formatColumnsf, ynPrompt } from "../utils/libokka";
 
-declare var globals: {
-	blockChain: GreyHack.BlockChain,
-	coin: GreyHack.Coin,
-	userSubWallets: GreyHack.SubWallet[],
-	currentSubWallet: GreyHack.SubWallet | null,
-	walletUsername: string,
-	walletPassword: string,
-	wallet: GreyHack.Wallet,
-};
+declare var globals: FluxCoinGlobals;
 
 const command = new Command({
 	name: "subwallet",

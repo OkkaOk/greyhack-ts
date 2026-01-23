@@ -43,37 +43,12 @@
 //   f: "bar",
 // };
 // let { d, e } = o;
-const lol = "ext";
-class Test {
-	private _myVal = 0;
-	classID = "test";
-	constructor(a?: any) {
-	}
 
-	get myVal() {
-		return this._myVal * 2;
-	}
-}
+const myArr = [1,2,3,4,5]
+myArr.unshift(7,8,9)
+myArr.shift()
 
-class Ext extends Test {
-	override classID = lol;
-	test = 2;
-}
-const aa = new Ext(userInput);
+isType(myArr, "blockChainLib")
 
-// function outerFunc() {
-// 	let counter = 0;
-// 	function innerFunc() {
-// 		counter += 1;
-// 	}
+let asd: GreyHack.FtpShell;
 
-// 	innerFunc();
-// 	print(counter);
-// }
-
-// outerFunc();
-
-const mylib = includeLib("/lib/metaxploit.so");
-if (mylib?.classID === "MetaxploitLib") {
-	print("hello");
-}

@@ -8,7 +8,7 @@ A minimal template for creating GreyHack scripts and tools in TypeScript.
 1. Install dependencies: `npm install`
 2. Write your scripts
 3. Edit the configuration in `index.js`
-4. Use `npm run build` to transpile your code into greyscript.
+4. Use `npm run transpile` to transpile your code into greyscript.
 
 ### Notes
 You need the messagehook installed for greybel-js to push the files into the game, see https://github.com/ayecue/greybel-js?tab=readme-ov-file#message-hook

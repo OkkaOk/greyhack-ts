@@ -1,0 +1,12 @@
+{
+	"configurations": [
+		{
+			"type": "node",
+			"request": "launch",
+			"name": "Transpile file",
+			"runtimeExecutable": "greyts",
+			"cwd": "${workspaceFolder}",
+			"args": ["transpile", "${file}"]
+		}
+	]
+}

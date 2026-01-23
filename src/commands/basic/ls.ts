@@ -58,13 +58,13 @@ command.run = function (args, options, process) {
 	function addLine(file: GreyHack.File, depth: number, forceFullPath?: boolean) {
 		let line = "";
 		if ("long" in options)
-			line += `${file.permissions!.color("green")} ${file.owner!.color("#FF9900")} ${file.group.color("#FF9900")} `;
+			line += `${file.permissions!.color("green")} ${file.owner!.color("#FF9900")} ${file.group!.color("#FF9900")} `;
 
 		let text = file.name!;
 		if ("full" in options || forceFullPath)
 			text = file.path();
 		else if ("tree" in options)
-			text = "|§".repeatSelf(depth) + text;
+			text = "|§".repeat(depth) + text;
 
 		line += text;
 		if (file.isFolder())

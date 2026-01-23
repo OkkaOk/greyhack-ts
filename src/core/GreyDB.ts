@@ -38,7 +38,7 @@ class DBHelper {
 		return true;
 	}
 
-	static createSource(computer: Computer, randomName: string, folder: string, contentLines: string[], out: GreyHack.File[]): boolean {
+	static createSource(computer: GreyHack.Computer, randomName: string, folder: string, contentLines: string[], out: GreyHack.File[]): boolean {
 		if (!contentLines.length) return true;
 
 		const content = contentLines.join(char(10));
@@ -307,7 +307,6 @@ export class GreyDB<Schema extends DBSchema> {
 
 		const finalFileContent: string[] = [];
 
-		let charCount = 1000;
 		let srcFileContent: string[] = [];
 		const srcFiles: GreyHack.File[] = [];
 
@@ -325,21 +324,25 @@ export class GreyDB<Schema extends DBSchema> {
 
 			const arr: DBTable[][] = [table.rows];
 			while (arr.length > 0) {
-				const currArr = arr.pull();
+				const currArr = arr.shift()!;
 				if (!currArr.length) continue;
 
 				const currArrStr = str(currArr);
-				if (charCount + currArrStr.length > 150000) {
+				if (currArrStr.length > 150000) {
 					const halfway = Math.ceil(currArr.length / 2);
 					arr.push(slice(currArr, 0, halfway));
 					arr.push(slice(currArr, halfway));
 					continue;
 				}
 
-				srcFileContent.push(`loadFunc = function()\nreturn ${currArrStr}\nend function\nt.funcs.push(@loadFunc)`);
+				srcFileContent.push([
+					"loadFunc = function()",
+					`	return ${currArrStr}`,
+					"end function",
+					"t.funcs.push(@loadFunc)"
+				].join(char(10)));
 				DBHelper.createSource(computer, rndName, this.folder, srcFileContent, srcFiles);
 				srcFileContent = [];
-				charCount = 1000;
 			}
 		}
 

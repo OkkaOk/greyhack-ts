@@ -27,24 +27,11 @@ String.prototype.replaceLast = function (oldValue, newValue) {
 };
 
 String.prototype.padLeft = function (count, padChar = " ") {
-	return padChar.repeatSelf(count) + this;
+	return padChar.repeat(count) + this;
 };
 
 String.prototype.padRight = function (count, padChar = " ") {
-	return this + padChar.repeatSelf(count);
-};
-
-String.prototype.repeatSelf = function (count) {
-	if (count <= 0) return "";
-	let thisString = this as string;
-	if (count === 1) return thisString;
-
-	const s = thisString;
-	for (const _ of range(count - 2)) {
-		thisString += s;
-	}
-
-	return thisString;
+	return this + padChar.repeat(count);
 };
 
 String.prototype.format = function (...formats) {
@@ -64,7 +51,7 @@ String.prototype.format = function (...formats) {
 
 		if (isType(length, "string")) length = 0;
 
-		let item = formats.pull();
+		let item = formats.shift()!;
 
 		if (format[-1] === "d" && isType(item, "number")) {
 			item = Math.round(item);
@@ -122,10 +109,10 @@ Number.prototype.toFixed = function (fractionDigits) {
 	let strValue = str(value);
 	const dotIndex = strValue.indexOf(".");
 	if (dotIndex == null) {
-		strValue = `${strValue}.${"0".repeatSelf(fractionDigits)}`;
+		strValue = `${strValue}.${"0".repeat(fractionDigits)}`;
 	}
 	else if (slice(strValue, dotIndex + 1).length < fractionDigits) {
-		strValue = strValue + ("0".repeatSelf(fractionDigits - slice(strValue, dotIndex + 1).length));
+		strValue = strValue + ("0".repeat(fractionDigits - slice(strValue, dotIndex + 1).length));
 	}
 
 	return strValue;
@@ -274,8 +261,12 @@ export function resolvePath(basePath: string, relativePath?: string): string {
 	if (!relativePath) return basePath;
 	if (relativePath[0] === "/") basePath = "/";
 
-	const currParts = basePath.split("\/");
-	const relativeParts = relativePath.split("\/");
+	const currParts = basePath.split("/");
+	const relativeParts = relativePath.split("/");
+
+	for (let i = currParts.length - 1; i >= 0; i--) {
+		if (!currParts[i]) currParts.remove(i);
+	}
 
 	for (const part of relativeParts) {
 		if (part === "..") {
@@ -284,10 +275,6 @@ export function resolvePath(basePath: string, relativePath?: string): string {
 		else if (part && part !== ".") {
 			currParts.push(part);
 		}
-	}
-
-	for (let i = currParts.length - 1; i >= 0; i--) {
-		if (!currParts[i]) currParts.remove(i);
 	}
 
 	return "/" + currParts.join("/");
@@ -398,7 +385,7 @@ export function formatColumnsf(
 			values[i] = values[i].padLeft(paddingLeft).padRight(paddingRight);
 		}
 		
-		let newLine = values.join(" ".repeatSelf(spacing));
+		let newLine = values.join(" ".repeat(spacing));
 		for (const key of Object.keys(replacer)) {
 			newLine = newLine.replace(key, replacer[key]);
 		}
@@ -413,4 +400,16 @@ export function formatColumnsf(
 		return newLines.join(char(10));
 
 	return newLines;
+}
+
+export function isQuoted(value: string): boolean {
+	const charStart = value[0];
+	const charEnd = value[-1];
+	if (charStart !== charEnd) return false;
+
+	// " or '
+	if (charStart === char(34) || charStart === char(39))
+		return true;
+
+	return false;
 }

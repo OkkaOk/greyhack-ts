@@ -63,6 +63,14 @@ export class FluxShell {
 		return this.raw.activeProcesses[-1];
 	}
 
+	static get currComputer(): GreyHack.Computer {
+		if (this.raw.core) {
+			return this.raw.core.currSession().computer;
+		}
+
+		return getShell().hostComputer;
+	}
+
 	static initialize() {
 		this.raw = this.initializeGCO();
 	}
@@ -177,6 +185,14 @@ export class FluxShell {
 	}
 
 	static expandFilename(tokens: ExtToken[]): ExtToken[] {
+		// for (const token of tokens) {
+		// 	if (!token.original) continue;
+		// 	if (isQuoted(token.value)) continue;
+
+		// 	// TODO: Add ? and [ later
+		// 	if (token.value.indexOf("*") === null) continue
+		// }
+
 		return tokens;
 	}
 
@@ -368,7 +384,7 @@ export class FluxShell {
 
 				command = subcommand;
 				commandName = subcommand.name;
-				args.pull();
+				args.shift();
 				foundSubcommand = true;
 				break;
 			}
@@ -507,7 +523,7 @@ export class FluxShell {
 		}
 
 		while (pipeline.tokens.length) {
-			const token = pipeline.tokens.pull();
+			const token = pipeline.tokens.shift()!;
 			let nextToken: string | null = null;
 			if (pipeline.tokens.hasIndex(0))
 				nextToken = pipeline.tokens[0];
@@ -534,7 +550,7 @@ export class FluxShell {
 			}
 			// Handle split >& file or &> file
 			else if ((token == ">&" || token == "&>") && nextToken) {
-				pipeline.tokens.pull(); // Consume the nextToken
+				pipeline.tokens.shift(); // Consume the nextToken
 				const fd = currStage.process.open(nextToken, "w");
 				if (!fd) {
 					currStage.invalid = true;
@@ -555,7 +571,7 @@ export class FluxShell {
 			}
 			// Handle append: fd>> file
 			else if (token.isMatch(/^\d?>>$/) && nextToken) {
-				pipeline.tokens.pull(); // Consume the nextToken
+				pipeline.tokens.shift(); // Consume the nextToken
 				const fd = currStage.process.open(nextToken, "rw");
 				if (!fd) {
 					currStage.invalid = true;
@@ -566,7 +582,7 @@ export class FluxShell {
 			}
 			// Handle truncate: fd> file
 			else if (token.isMatch(/^\d?>$/) && nextToken) {
-				pipeline.tokens.pull(); // Consume the nextToken
+				pipeline.tokens.shift(); // Consume the nextToken
 				const fd = currStage.process.open(nextToken, "w");
 				if (!fd) {
 					currStage.invalid = true;
@@ -585,11 +601,11 @@ export class FluxShell {
 					input = this.expandVariables(input);
 					currStage.process.write(0, input);
 				}
-				pipeline.tokens.pull(); // Consume the nextToken
+				pipeline.tokens.shift(); // Consume the nextToken
 			}
 			// Handle input redirection
 			else if (token === "<" && nextToken) {
-				pipeline.tokens.pull(); // Consume the nextToken
+				pipeline.tokens.shift(); // Consume the nextToken
 				const fd = currStage.process.open(nextToken, "r");
 				if (!fd) {
 					currStage.invalid = true;
@@ -677,13 +693,13 @@ export class FluxShell {
 
 			// There was a pipeline before this (separated by ; || &&)
 			if (this.raw.prevPipeline) {
-				if (pipeline.condition === "OR" && this.raw.env["?"] === 0) {
-					this.raw.pipelines.pull();
+				if (pipeline.condition === "OR" && this.raw.env["?"] === EXIT_CODES.SUCCESS) {
+					this.raw.pipelines.shift();
 					continue;
 				}
 
-				if (pipeline.condition === "AND" && this.raw.env["?"] !== 0) {
-					this.raw.pipelines.pull();
+				if (pipeline.condition === "AND" && this.raw.env["?"] !== EXIT_CODES.SUCCESS) {
+					this.raw.pipelines.shift();
 					continue;
 				}
 			}
@@ -691,7 +707,7 @@ export class FluxShell {
 			this.parsePipelineStages(pipeline);
 
 			while (pipeline.stages.length) {
-				const stage = pipeline.stages.pull();
+				const stage = pipeline.stages.shift()!;
 
 				if (stage.invalid) {
 					this.raw.env["?"] = EXIT_CODES.MISUSE;
@@ -711,7 +727,7 @@ export class FluxShell {
 			// launched another instance of this script (e.g. hop sessions) and the new instance picked up
 			// the remaining pipeline
 			if (pipeline.id === this.raw.pipelines[0].id) {
-				this.raw.prevPipeline = this.raw.pipelines.pull();
+				this.raw.prevPipeline = this.raw.pipelines.shift();
 			}
 		}
 	}
@@ -754,7 +770,7 @@ export class FluxShell {
 
 			this.raw.history.push(input);
 			if (this.raw.history.length > 30)
-				this.raw.history.pull();
+				this.raw.history.shift();
 		}
 	}
 

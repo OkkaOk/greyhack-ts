@@ -116,7 +116,7 @@ command.subcommands[2].run = function (args, options, process) {
 		process.write(2, `Table '${tableName}' doesn't exist`);
 		return EXIT_CODES.GENERAL_ERROR;
 	}
-	
+
 	let limit: number | undefined = undefined;
 	if ("count" in options) limit = options["count"][0] as number;
 

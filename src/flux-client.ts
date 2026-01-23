@@ -2,7 +2,7 @@ import { Command } from "./shell/Command";
 import { FluxShell } from "./shell/FluxShell";
 import { requireLib } from "./utils/libokka";
 
-declare var globals: {
+export type FluxCoinGlobals = {
 	blockChain: GreyHack.BlockChain,
 	coin: GreyHack.Coin,
 	userSubWallets: GreyHack.SubWallet[],
@@ -11,6 +11,8 @@ declare var globals: {
 	walletPassword: string,
 	wallet: GreyHack.Wallet,
 };
+
+declare var globals: FluxCoinGlobals;
 
 FluxShell.initialize();
 

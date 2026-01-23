@@ -34,7 +34,7 @@ command.funcs.showCommandHelp = function (commandName, command, process) {
 	}
 
 	if (command.subcommands.length && parts.length > 1) {
-		parts.pull();
+		parts.shift();
 		for (const subcommand of command.subcommands) {
 			if (subcommand.name === parts[0]) {
 				return this.showCommandHelp(parts.join(" "), subcommand, process);

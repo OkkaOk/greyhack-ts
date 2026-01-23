@@ -6,13 +6,16 @@
       "name": "@grey-ts/template",
       "dependencies": {
         "@grey-ts/transpiler": "link:@grey-ts/transpiler",
-        "@grey-ts/types": "link:@grey-ts/types",
+        "@grey-ts/types": "https://github.com/OkkaOk/grey-ts-types",
       },
     },
   },
+  "trustedDependencies": [
+    "@grey-ts/types",
+  ],
   "packages": {
     "@grey-ts/transpiler": ["@grey-ts/transpiler@link:@grey-ts/transpiler", { "bin": { "greyts": "dist/index.js" } }],
 
-    "@grey-ts/types": ["@grey-ts/types@link:@grey-ts/types", {}],
+    "@grey-ts/types": ["@grey-ts/types@github:OkkaOk/grey-ts-types#208e32f", {}, "OkkaOk-grey-ts-types-208e32f"],
   }
 }
