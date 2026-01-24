@@ -72,7 +72,7 @@ command.funcs.refreshSessions = function () {
 command.funcs.listSessions = function (process) {
 	this.refreshSessions();
 
-	if (!FluxCore.raw.sessions.size) {
+	if (!Object.size(FluxCore.raw.sessions)) {
 		process.write(1, "No sessions found!");
 		return false;
 	}
@@ -122,7 +122,7 @@ command.subcommands[0].run = function (args, _options, process) {
 		return EXIT_CODES.MISUSE;
 	}
 
-	if (index < 1 || index > FluxCore.raw.sessions.size) {
+	if (index < 1 || index > Object.size(FluxCore.raw.sessions)) {
 		process.write(2, `Invalid index (${index})`);
 		return EXIT_CODES.MISUSE;
 	}
@@ -163,7 +163,7 @@ command.subcommands[1].run = function (args, options, process) {
 		return EXIT_CODES.MISUSE;
 	}
 
-	if (index < 1 || index > FluxCore.raw.sessions.size) {
+	if (index < 1 || index > Object.size(FluxCore.raw.sessions)) {
 		process.write(2, `Invalid index (${index})`);
 		return EXIT_CODES.MISUSE;
 	}

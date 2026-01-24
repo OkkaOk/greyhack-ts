@@ -37,7 +37,7 @@ command.run = function (args, options, process) {
 		return EXIT_CODES.GENERAL_ERROR;
 	}
 
-	FluxShell.raw.aliases.remove(alias);
+	Object.remove(FluxShell.raw.aliases, alias);
 	FluxCore.raw.database.remove("aliases", { key: alias });
 
 	process.write(1, `Alias '${alias}' removed!`);

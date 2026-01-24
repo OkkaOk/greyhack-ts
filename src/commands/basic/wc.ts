@@ -41,7 +41,7 @@ const command = new Command({
 });
 
 command.run = function (args, options, process) {
-	if (!options.indexes().length) {
+	if (!Object.size(options)) {
 		(options as any).lines = true;
 		(options as any).words = true;
 		(options as any).characters = true;
@@ -106,7 +106,7 @@ command.run = function (args, options, process) {
 			if (!line) continue;
 			const lineLength = line.length;
 
-			wordCount += line.matches(/\w+/).size;
+			wordCount += Object.size(line.matches(/\w+/));
 			charCount += lineLength;
 			if (lineLength > longest) longest = lineLength;
 		}

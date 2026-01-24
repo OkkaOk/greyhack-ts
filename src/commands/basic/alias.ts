@@ -34,14 +34,14 @@ const command = new Command({
 
 command.run = function (args, options, process) {
 	function printAliases(strFormat: string) {
-		if (!FluxShell.raw.aliases.size) {
+		if (!Object.size(FluxShell.raw.aliases)) {
 			process.write(1, "No aliases exist!");
 			return EXIT_CODES.SUCCESS;
 		}
 
 		process.write(1, "Active aliases:");
 		const out: string[] = [];
-		for (const alias of FluxShell.raw.aliases.indexes<string>()) {
+		for (const alias of Object.keys(FluxShell.raw.aliases)) {
 			out.push(strFormat.format(alias, FluxShell.raw.aliases[alias].replace(" ", "§")));
 		}
 

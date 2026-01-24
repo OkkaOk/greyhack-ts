@@ -105,7 +105,7 @@ export class FluxShell {
 
 		function printErr() {
 			let color = "red";
-			if (gcosh.settings.hasIndex("errorColor")) {
+			if (Object.hasOwn(gcosh.settings, "errorColor")) {
 				color = gcosh.settings.errorColor;
 			}
 
@@ -353,7 +353,7 @@ export class FluxShell {
 
 	static getCommand(commandName: string, args: string[]): Command {
 		// If we don't know this command, try to find a matching binary from PATH and cwd
-		if (!this.raw.commands.hasIndex(commandName)) {
+		if (!Object.hasOwn(this.raw.commands, commandName)) {
 			let shell: GreyHack.Shell | null = getShell();
 			let comp: GreyHack.Computer = getShell().hostComputer;
 			let currPath = currentPath();
@@ -429,7 +429,7 @@ export class FluxShell {
 			shell = this.raw.core.currSession().shell;
 		}
 
-		for (const reqName of command.requirements.indexes() as (keyof typeof command.requirements)[]) {
+		for (const reqName of Object.keys(command.requirements)) {
 			const value = command.requirements[reqName];
 			if (reqName === "hasShell" && value === true && !shell) {
 				return "This command requires the session to have a shell";
@@ -487,7 +487,7 @@ export class FluxShell {
 		const options = command.extractOptions(args, child);
 		if (options === null) return EXIT_CODES.MISUSE;
 
-		if (options.hasIndex("help")) {
+		if (Object.hasOwn(options, "help")) {
 			command.showHelp(child);
 			return EXIT_CODES.SUCCESS;
 		}
@@ -517,7 +517,7 @@ export class FluxShell {
 
 		// Closes the file streams if not already done in the command 
 		// Also sets the content to the file
-		for (let fd = 3; fd < child.resources.size; fd++) {
+		for (let fd = 3; fd < Object.size(child.resources); fd++) {
 			child.close(fd);
 		}
 
@@ -541,7 +541,7 @@ export class FluxShell {
 
 		// Recursively do alias expansion for the first token in the pipeline
 		let firstToken = pipeline.tokens[0];
-		while (this.raw.aliases.hasIndex(firstToken) && !expandedTokens.hasIndex(firstToken)) {
+		while ((firstToken in this.raw.aliases) && !(firstToken in expandedTokens)) {
 			const aliasTokens = this.tokenize(this.raw.aliases[firstToken]);
 			pipeline.tokens = aliasTokens.concat(slice(pipeline.tokens, 1));
 			expandedTokens[firstToken] = true;
@@ -788,6 +788,8 @@ export class FluxShell {
 				message = getMessageFunc();
 			else
 				message = this.getUserInputMessage();
+
+			cd(this.raw.env["PWD"]);
 
 			const input = userInput(message, false, false, true);
 			this.handleInput(input);

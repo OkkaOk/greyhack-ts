@@ -14,8 +14,8 @@ interface DBTableType {
 
 class DBHelper {
 	static rowMatchesQuery(row: Record<string, any>, query: Query<any>): boolean {
-		for (const key of query.indexes() as string[]) {
-			if (!row.hasIndex(key)) return false;
+		for (const key of Object.keys(query)) {
+			if (!(key in row)) return false;
 			const value = row[key];
 			const qvalue = query[key] as string | { [OP in QueryOperator]?: any };
 
@@ -31,7 +31,7 @@ class DBHelper {
 				if (op === "$gte" && value < qvalue[op]) return false;
 				if (op === "$lt" && value >= qvalue[op]) return false;
 				if (op === "$lte" && value > qvalue[op]) return false;
-				if (op === "$contains" && (value as object).indexOf(qvalue[op]) === null) return false;
+				if (op === "$contains" && Object.indexOf(value, qvalue[op]) === null) return false;
 			}
 		}
 
@@ -159,7 +159,7 @@ export class GreyDB<Schema extends DBSchema> {
 	}
 
 	hasTable(tableName: string): boolean {
-		return this.tables.hasIndex(tableName);
+		return tableName in this.tables;
 	}
 
 	addTable<Name extends keyof Schema>(
@@ -168,7 +168,7 @@ export class GreyDB<Schema extends DBSchema> {
 	): boolean {
 		const name = tableName;
 
-		if (this.tables.hasIndex(tableName)) {
+		if (tableName in this.tables) {
 			this.tables[tableName].primaryKey = primaryKey;
 			this.modified = true;
 			return true;
@@ -182,10 +182,10 @@ export class GreyDB<Schema extends DBSchema> {
 	}
 
 	deleteTable<Name extends keyof Schema>(tableName: Name) {
-		if (!this.tables.hasIndex(tableName)) return false;
+		if (!Object.hasOwn(this.tables, tableName)) return false;
 
 		this.modified = true;
-		this.tables.remove(tableName);
+		Object.remove(this.tables, tableName);
 		return true;
 	}
 
@@ -193,7 +193,7 @@ export class GreyDB<Schema extends DBSchema> {
 		const table = this.tables[tableName];
 		const primaryKey = table.primaryKey;
 
-		if (primaryKey && table.kIndex[primaryKey] && table.kIndex[primaryKey].hasIndex(row[primaryKey])) {
+		if (primaryKey && table.kIndex[primaryKey] && row[primaryKey] in table.kIndex[primaryKey]) {
 			const index = table.kIndex[primaryKey][row[primaryKey]][0];
 			table.rows[index] = row;
 		}
@@ -224,7 +224,7 @@ export class GreyDB<Schema extends DBSchema> {
 		if (limit && limit <= 0) return [];
 
 		if (!query) query = {};
-		if (!query.size) return slice(table.rows, 0, limit);
+		if (!Object.size(query)) return slice(table.rows, 0, limit);
 
 		const output: Schema[Name][] = [];
 		for (const index of table.getRowIndexes(query)) {
@@ -310,7 +310,7 @@ export class GreyDB<Schema extends DBSchema> {
 		let srcFileContent: string[] = [];
 		const srcFiles: GreyHack.File[] = [];
 
-		for (const table of this.tables.values() as DBTable[]) {
+		for (const table of Object.values(this.tables)) {
 			if (table.temporary) continue;
 
 			srcFileContent.push(`obj.tables["${table.name as string}"] = {}`);
@@ -490,13 +490,13 @@ export class GreyDB<Schema extends DBSchema> {
 			return false;
 		}
 
-		if (!getCustomObject().hasIndex(gcoKey)) return false;
+		if (!Object.hasOwn(getCustomObject(), gcoKey)) return false;
 
 		this.tables = {} as any;
 		this.owner = getCustomObject()[gcoKey]["owner"];
 
 		const tables: typeof this.tables = getCustomObject()[gcoKey]["tables"];
-		for (const tableName of tables.indexes()) {
+		for (const tableName of Object.keys(tables)) {
 			this.addTable(tableName);
 			const table = this.tables[tableName];
 
@@ -514,7 +514,7 @@ export class GreyDB<Schema extends DBSchema> {
 			table.calculateIndexes();
 		}
 
-		getCustomObject().remove(gcoKey);
+		Object.remove(getCustomObject(), gcoKey);
 
 		const tookMs = Math.round((time() - startTime) * 1000);
 		if (tookMs > 2000) {

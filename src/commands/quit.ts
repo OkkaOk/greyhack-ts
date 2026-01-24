@@ -18,10 +18,10 @@ const command = new Command({
 command.run = function (_args, options, _process) {
 	if (!FluxCore.currSession().shell) {
 		FluxCore.raw.sessionPath.pop();
-		if (!options.hasIndex("all")) return EXIT_CODES.SUCCESS;
+		if (!Object.hasOwn(options, "all")) return EXIT_CODES.SUCCESS;
 	}
 
-	if (options.hasIndex("all")) FluxCore.raw.exiting = true;
+	if (Object.hasOwn(options, "all")) FluxCore.raw.exiting = true;
 	FluxShell.raw.env["?"] = EXIT_CODES.SUCCESS;
 	exit("");
 };

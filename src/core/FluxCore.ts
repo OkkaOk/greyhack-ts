@@ -15,7 +15,7 @@ export class FluxCore {
 	static initialize() {
 		FluxShell.initialize();
 
-		globals["wasInitialized"] = getCustomObject<GCOType>().hasIndex("fluxCore");
+		globals["wasInitialized"] = Object.hasOwn(getCustomObject<GCOType>(), "fluxCore");
 		if (!globals["wasInitialized"]) {
 			this.checkCredentials();
 			if (!params.length) this.printArt();
@@ -119,7 +119,7 @@ export class FluxCore {
 		gcosh.env["?"] = 0;
 
 		if (!globals.hasIndex("IS_GREYBEL")) {
-			if (!gcosh.env.hasIndex("HACKSHOP_IP") && session.computer.isNetworkActive()) {
+			if (!("HACKSHOP_IP" in gcosh.env) && session.computer.isNetworkActive()) {
 				print("Fetching hackshop ip...");
 				let ip = Libex.getIpWithPortOpen(1542);
 
@@ -147,7 +147,7 @@ export class FluxCore {
 			gcof.database.insert("settings", defaultSettings);
 		}
 
-		for (const settingKey of defaultSettings.indexes() as (keyof typeof defaultSettings)[]) {
+		for (const settingKey of Object.keys(defaultSettings)) {
 			if (!(settingKey in settings)) {
 				settings[settingKey] = defaultSettings[settingKey];
 				gcof.database.modified = true;
@@ -170,11 +170,11 @@ export class FluxCore {
 	}
 
 	static getSessions(): Session[] {
-		return this.raw.sessions.values();
+		return Object.values(this.raw.sessions)
 	}
 
 	static getSession(publicIp?: string, localIp?: string, user?: string, type?: Session["type"], id?: string): Session | null {
-		if (id && this.raw.sessions.hasIndex(id)) return this.raw.sessions[id];
+		if (id && (id in this.raw.sessions)) return this.raw.sessions[id];
 
 		for (const session of this.getSessions()) {
 			if (publicIp && publicIp != session.publicIp) continue;
@@ -208,7 +208,7 @@ export class FluxCore {
 	static createSession(device: GreyHack.Shell | GreyHack.Computer, isHome = false, isRshellClient = false, isProxy = false): Session | null {
 		const newSession = new Session(device, isHome, isRshellClient, isProxy);
 
-		if (this.raw.sessions.hasIndex(newSession.id)) return null;
+		if (newSession.id in this.raw.sessions) return null;
 
 		if (FluxShell.raw.settings["killWorseSessions"] && !isRshellClient && !isProxy) {
 			for (const session of this.getSessions()) {
@@ -291,8 +291,8 @@ export class FluxCore {
 
 		const password = userInput("Binary password: ", true);
 		if (md5(password) != "a4f1375d80e82d4cd8abf16cab156499") {
-			getCustomObject<GCOType>().remove("fluxCore");
-			getCustomObject<GCOType>().remove("fluxShell");
+			Object.remove(getCustomObject<GCOType>(), "fluxCore");
+			Object.remove(getCustomObject<GCOType>(), "fluxShell");
 			exit("<b><color=red>Invalid password</color></b>");
 		}
 	}

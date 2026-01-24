@@ -110,14 +110,14 @@ export class Process {
 			this.nextFd += 1;
 		}
 
-		if (!this.resources.hasIndex(oldFd)) {
+		if (!Object.hasOwn(this.resources, oldFd)) {
 			this.write(2, "Bad file descriptor (" + oldFd + ") [Process.dup]");
 			return -1;
 		}
 
 		if (oldFd === newFd) return oldFd;
 
-		if (this.resources.hasIndex(newFd)) {
+		if (Object.hasOwn(this.resources, newFd)) {
 			this.close(newFd);
 		}
 
@@ -214,7 +214,7 @@ export class Process {
 			}
 		}
 
-		this.resources.remove(fd);
+		Object.remove(this.resources, fd);
 		return true;
 	}
 }

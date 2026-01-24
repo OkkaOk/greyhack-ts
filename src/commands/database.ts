@@ -128,7 +128,7 @@ command.subcommands[2].run = function (args, options, process) {
 			return EXIT_CODES.MISUSE;
 		}
 
-		if (query.size !== 0) {
+		if (Object.size(query) !== 0) {
 			const countRemoved = FluxCore.raw.database.remove(tableName, query, limit);
 			process.write(1, `Removed ${countRemoved} rows`);
 			return EXIT_CODES.SUCCESS;

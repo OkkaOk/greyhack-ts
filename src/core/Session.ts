@@ -137,11 +137,11 @@ export class Session {
 			}
 		}
 
-		if (this.apt && FluxShell.raw.env.hasIndex("HACKSHOP_IP")) {
+		if (this.apt && Object.hasOwn(FluxShell.raw.env, "HACKSHOP_IP")) {
 			this.apt.delRepo(FluxShell.raw.env["HACKSHOP_IP"] as string);
 		}
 
-		FluxCore.raw.sessions.remove(this.id);
+		Object.remove(FluxCore.raw.sessions, this.id);
 
 		return true;
 	}

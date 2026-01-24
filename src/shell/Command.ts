@@ -184,7 +184,7 @@ export class Command<T extends object = any> implements CommandData {
 			// Handles long flags: --key=value or --key value or --key
 			// also single short flags: -k=value or -k value or -k
 			if (option) {
-				if (!options.hasIndex(option.name)) options[option.name] = [];
+				if (!(option.name in options)) options[option.name] = [];
 
 				let value = "";
 				if (arg.indexOf("=") !== null) {
@@ -216,7 +216,7 @@ export class Command<T extends object = any> implements CommandData {
 				option = this.getOptionForFlag(flag);
 				if (!option) continue;
 
-				if (!options.hasIndex(option.name)) options[option.name] = [];
+				if (!(option.name in options)) options[option.name] = [];
 				options[option.name].push("");
 				found = true;
 			}

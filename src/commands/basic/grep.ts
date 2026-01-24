@@ -93,7 +93,7 @@ command.run = function (args, options, process) {
 
 	for (const obj of data) {
 		for (const line of obj.lines) {
-			const lineMatches = line.matches(pattern, regexMode).values();
+			const lineMatches = Object.values(line.matches(pattern, regexMode))
 			if (lineMatches.length && inverted) continue;
 			if (!lineMatches.length && !inverted) continue;
 

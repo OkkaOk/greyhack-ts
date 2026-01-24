@@ -1,4 +1,3 @@
-import type { Session } from "../core/Session";
 import type { GCOType } from "../types/core";
 
 String.prototype.color = function (color = "red") {
@@ -40,7 +39,7 @@ String.prototype.format = function (...formats) {
 
 	const matches = this.matches(/%[-.]?\w+/);
 
-	for (const format of matches.values() as string[]) {
+	for (const format of Object.values(matches)) {
 		let length: string | number = 0;
 		if (format[1] == "-" || format[1] == ".") {
 			length = slice(format, 2, format.length - 1).toInt();
@@ -206,7 +205,7 @@ export function requireLib<Lib extends keyof GreyHack.LibTypes>(libName: Lib): G
 	}
 
 	// Try to scp it from existing sessions
-	for (const session of gco.fluxCore.sessions.values() as Session[]) {
+	for (const session of Object.values(gco.fluxCore.sessions)) {
 		if (!session.shell) continue;
 		if (session === currSession) continue;
 

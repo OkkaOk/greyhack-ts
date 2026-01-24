@@ -41,7 +41,7 @@ command.run = function (args, options, process) {
 
 	if ("to_session" in options) {
 		const index = (options["to_session"][0] as string).toInt();
-		if (isType(index, "string") || index < 0 || index >= FluxCore.raw.sessions.size) {
+		if (isType(index, "string") || index < 0 || index >= Object.size(FluxCore.raw.sessions)) {
 			process.write(2, "Invalid 'to_session' index!");
 			return EXIT_CODES.MISUSE;
 		}
@@ -57,7 +57,7 @@ command.run = function (args, options, process) {
 
 	if ("from_session" in options) {
 		const index = (options["from_session"][0] as string).toInt();
-		if (isType(index, "string") || index < 0 || index >= FluxCore.raw.sessions.size) {
+		if (isType(index, "string") || index < 0 || index >= Object.size(FluxCore.raw.sessions)) {
 			process.write(2, "Invalid 'from_session' index!");
 			return EXIT_CODES.MISUSE;
 		}

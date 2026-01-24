@@ -28,14 +28,14 @@ const command = new Command({
 
 command.run = function (args, options, process) {
 	function printVariables(strFormat: string) {
-		if (!FluxShell.raw.env.size) {
+		if (!Object.size(FluxShell.raw.env)) {
 			process.write(1, "No env variables set!");
 			return EXIT_CODES.SUCCESS;
 		}
 
 		process.write(1, "<b>ENV Variables:");
 		const out: string[] = [];
-		for (const variable of FluxShell.raw.env.indexes<string>()) {
+		for (const variable of Object.keys(FluxShell.raw.env)) {
 			out.push(strFormat.format(variable, FluxShell.raw.env[variable]).replace(" ", "§"));
 		}
 

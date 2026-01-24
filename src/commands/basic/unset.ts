@@ -37,7 +37,7 @@ command.run = function (args, options, process) {
 		return EXIT_CODES.GENERAL_ERROR;
 	}
 
-	FluxShell.raw.env.remove(variable);
+	Object.remove(FluxShell.raw.env, variable);
 	FluxCore.raw.database.remove("env", { key: variable });
 
 	process.write(1, `ENV variable $${variable} removed!`);

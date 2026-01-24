@@ -112,7 +112,7 @@ command.run = function (args, options, process) {
 		output = scriptOutput;
 	}
 
-	getCustomObject().remove(randomName);
+	Object.remove(getCustomObject(), randomName);
 
 	if (launchResult === false) {
 		process.write(2, `Failed to launch bin file because shell.launch has a 2 second cooldown`);

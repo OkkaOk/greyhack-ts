@@ -94,7 +94,7 @@ command.run = function (args, _options, process) {
 
 	for (const commandName of Object.keys(FluxShell.raw.commands)) {
 		const command = FluxShell.raw.commands[commandName];
-		if (!categoryCommands.hasIndex(command.category))
+		if (!(command.category in categoryCommands))
 			categoryCommands[command.category] = [];
 
 		categoryCommands[command.category].push(command);
