@@ -43,7 +43,7 @@ export class JSON {
 	private static hexToInt(hexString: string): number {
 		let value = 0;
 
-		for (const ch of hexString.lower()) {
+		for (const ch of hexString.toLowerCase()) {
 			let d = "0123456789".indexOf(ch);
 			if (d !== null) {
 				value = value * 16 + d;

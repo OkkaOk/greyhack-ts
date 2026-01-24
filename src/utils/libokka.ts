@@ -241,7 +241,7 @@ export function ynPrompt(prompt: string, defaultChoice: "y" | "n" | "" = ""): "y
 	if (defaultChoice === "n") yn = "[y/N]";
 
 	while (true) {
-		input = userInput(`${prompt} ${yn}: `).lower();
+		input = userInput(`${prompt} ${yn}: `).toLowerCase();
 		if (!input) input = defaultChoice;
 
 		if (input.length > 0 && (input[0] === "y" || input[0] === "n")) break;
@@ -350,7 +350,7 @@ export function formatColumnsf(
 	if (!replacer) replacer = {};
 
 	const longestStrings: number[] = [];
-
+	
 	for (const line of rows) {
 		const values = line.removeTags().split(/\s/);
 

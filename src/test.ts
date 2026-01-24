@@ -42,13 +42,11 @@
 //   e: 12,
 //   f: "bar",
 // };
-// let { d, e } = o;
+// let { d, e } = o
 
-const myArr = [1,2,3,4,5]
-myArr.unshift(7,8,9)
-myArr.shift()
+const myObj = {
+	key1: 123,
+	key2: 555
+}
 
-isType(myArr, "blockChainLib")
-
-let asd: GreyHack.FtpShell;
-
+print(Object.values(myObj))

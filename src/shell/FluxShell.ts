@@ -1,5 +1,5 @@
 import type { FluxShellGCO, GCOType, Pipeline } from "../types/core";
-import { resolvePath } from "../utils/libokka";
+import { isQuoted, resolvePath } from "../utils/libokka";
 import { Command } from "./Command";
 import { Process } from "./Process";
 
@@ -12,7 +12,7 @@ export const EXIT_CODES = {
 	SUCCESS: 0,
 } as const;
 
-const raw_print: (val: string, replace?: boolean) => null = print;
+const rawPrint: (val: string, replace?: boolean) => null = print;
 
 print = (value: any, replaceText = false) => {
 	value = str(value);
@@ -32,7 +32,7 @@ print = (value: any, replaceText = false) => {
 		gco.fluxShell.activeProcesses[-1].write(fd, value);
 	}
 	else {
-		raw_print(value, replaceText);
+		rawPrint(value, replaceText);
 	}
 	return null;
 };
@@ -98,9 +98,9 @@ export class FluxShell {
 		const gcosh = gco.fluxShell;
 
 		function printOut() {
-			const data = FluxShell.mainProcess().read(1, true);
+			const data = FluxShell.mainProcess.read(1, true);
 			if (!data) return;
-			raw_print(data);
+			rawPrint(data);
 		}
 
 		function printErr() {
@@ -109,9 +109,9 @@ export class FluxShell {
 				color = gcosh.settings.errorColor;
 			}
 
-			const lines = FluxShell.mainProcess().read(2);
+			const lines = FluxShell.mainProcess.read(2);
 			for (const line of lines)
-				raw_print(`<color=${color}>${line}`);
+				rawPrint(`<color=${color}>${line}`);
 		}
 
 		const mainProcess = new Process(0, "flux");
@@ -185,13 +185,39 @@ export class FluxShell {
 	}
 
 	static expandFilename(tokens: ExtToken[]): ExtToken[] {
-		// for (const token of tokens) {
-		// 	if (!token.original) continue;
-		// 	if (isQuoted(token.value)) continue;
+		const computer = this.currComputer;
 
-		// 	// TODO: Add ? and [ later
-		// 	if (token.value.indexOf("*") === null) continue
-		// }
+		let workingDir = currentPath();
+		if (this.raw.core)
+			workingDir = this.raw.core.currSession().workingDir;
+
+		for (let i = 0; i < tokens.length; i++) {
+			if (!tokens[i].original) continue;
+			if (isQuoted(tokens[i].value)) continue;
+
+			// Check if token doesn't contain glob characters
+			if (tokens[i].value.indexOf("*") == null && tokens[i].value.indexOf("?") == null) {
+				continue;
+			}
+
+			const matches = this.globMatch(tokens[i].value, computer, workingDir);
+
+			// If no matches found, leave the token as-is (bash behavior)
+			if (matches.length === 0) {
+				continue;
+			}
+
+			tokens[i].value = matches[0];
+			tokens[i].original = false;
+
+			// If matches found, expand to all matches
+			for (let j = matches.length - 1; j >= 1; j--) {
+				tokens.insert(i + 1, {
+					value: matches[j]!,
+					original: false,
+				});
+			}
+		}
 
 		return tokens;
 	}
@@ -504,7 +530,7 @@ export class FluxShell {
 		function createStage(): Pipeline["stages"][number] {
 			return {
 				tokens: [],
-				process: FluxShell.mainProcess().clone(),
+				process: FluxShell.mainProcess.clone(),
 				invalid: false,
 			};
 		}
@@ -756,10 +782,12 @@ export class FluxShell {
 				this.raw.env["USER"] = session.user;
 			}
 
-			if (!getMessageFunc)
-				getMessageFunc = this.getUserInputMessage;
+			let message = "";
 
-			const message = getMessageFunc();
+			if (getMessageFunc)
+				message = getMessageFunc();
+			else
+				message = this.getUserInputMessage();
 
 			const input = userInput(message, false, false, true);
 			this.handleInput(input);
@@ -797,5 +825,85 @@ export class FluxShell {
 		const currPath = session.workingDir.replace(session.homeDir(), "~");
 		const userSymbol = user === "root" ? "#" : "$";
 		return `<b><color=${color}>#${this.raw.core.raw.sessionPath.length} ${user}@${session.localIp}</color>:<color=#28A9DB>${currPath}</color>${userSymbol} `;
+	}
+
+	private static globMatch(pattern: string, computer: GreyHack.Computer, workingDir: string): string[] {
+		const matches: string[] = [];
+
+		// Split pattern into directory and filename parts
+		let dirPath = workingDir;
+		let givenDirPath = "";
+		let filePattern = pattern;
+
+		const lastSlash = pattern.lastIndexOf("/");
+		if (lastSlash !== -1) {
+			givenDirPath = pattern.slice(0, lastSlash);
+			dirPath = resolvePath(workingDir, givenDirPath);
+			filePattern = pattern.slice(lastSlash + 1);
+		}
+
+		// Get directory contents
+		const dir = computer.file(dirPath);
+		if (!dir || !dir.isFolder()) {
+			return matches;
+		}
+
+		const files: GreyHack.File[] = [];
+
+		files.push(...dir.getFiles()!, ...dir.getFolders()!);
+
+		for (const file of files) {
+			if (this.globMatchesFile(filePattern, file.name!)) {
+				let outText = file.name!;
+				if (givenDirPath)
+					outText = givenDirPath + "/" + outText;
+
+				matches.push(outText);
+			}
+		}
+
+		// Sort matches alphabetically (bash behavior)
+		matches.sort();
+		return matches;
+	}
+
+	private static globMatchesFile(pattern: string, filename: string): boolean {
+		let p = 0; // pattern index
+		let f = 0; // filename index
+
+		while (p < pattern.length && f < filename.length) {
+			if (pattern[p] === "*") {
+				// * matches zero or more characters
+				if (p === pattern.length - 1) {
+					// * at end matches everything
+					return true;
+				}
+
+				// Try to match rest of pattern
+				const restPattern = pattern.slice(p + 1);
+				while (f <= filename.length) {
+					if (this.globMatchesFile(restPattern, filename.slice(f))) {
+						return true;
+					}
+					f++;
+				}
+				return false;
+			}
+			else if (pattern[p] === "?") {
+				// ? matches exactly one character
+				p++;
+				f++;
+			}
+			else {
+				// Literal character match
+				if (pattern[p] !== filename[f]) {
+					return false;
+				}
+				p++;
+				f++;
+			}
+		}
+
+		return p === pattern.length && f === filename.length;
 	}
 }

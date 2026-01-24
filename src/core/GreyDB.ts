@@ -68,13 +68,13 @@ class DBHelper {
 
 const dbVersion = 1;
 const gcoKey = "fpZ1mDjzVhH6IVejN5jf" as const;
-const binaryCode: string = `\
-if params.len == 0 then exit("<color=red>No params given!")
-token = params.pull()
-
-if md5(obj.owner.name + obj.owner.passwordHash) != token then
-	exit("<color=red>Invalid password!")
-end if`;
+const binaryCode = [
+	'if params.len == 0 then exit("<color=red>No params given!")',
+	'token = params.pull()',
+	'if md5(obj.owner.name + obj.owner.passwordHash) != token then',
+	'	exit("<color=red>Invalid password!")',
+	'end if'
+].join(char(10));
 
 class DBTable implements DBTableType {
 	classID = "dbtable";
@@ -96,7 +96,7 @@ class DBTable implements DBTableType {
 	setIndex(row: any, index: number) {
 		for (const key of Object.keys(row)) {
 			if (!this.kIndex[key]) this.kIndex[key] = {};
-			
+
 			const colValue = row[key];
 			if (!this.kIndex[key][colValue])
 				this.kIndex[key][colValue] = [];
@@ -159,7 +159,7 @@ export class GreyDB<Schema extends DBSchema> {
 	}
 
 	hasTable(tableName: string): boolean {
-		return this.tables.hasIndex(tableName)
+		return this.tables.hasIndex(tableName);
 	}
 
 	addTable<Name extends keyof Schema>(
@@ -212,7 +212,7 @@ export class GreyDB<Schema extends DBSchema> {
 			this.print(`<color=red>Given row for table '${tableName as string}' doesn't have the primary key: ${primaryKey as string}`, 1);
 			return false;
 		}
-		
+
 		this.insertRaw(tableName, row);
 		return true;
 	}

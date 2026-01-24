@@ -232,7 +232,7 @@ export class Command<T extends object = any> implements CommandData {
 		if (this.options.length) output += " [OPTIONS]";
 
 		for (const arg of this.arguments) {
-			let text = arg.name.upper();
+			let text = arg.name.toUpperCase();
 			if (!arg.required) {
 				text = `[${text}]`;
 			}
@@ -290,7 +290,7 @@ export class Command<T extends object = any> implements CommandData {
 			process.write(1, "\\nArguments:");
 			const argsOut: string[] = [];
 			for (const arg of this.arguments) {
-				argsOut.push(`§§${arg.name.upper()} ${arg.description.replace(" ", "§")}`);
+				argsOut.push(`§§${arg.name.toUpperCase()} ${arg.description.replace(" ", "§")}`);
 			}
 
 			process.write(1, formatColumns(argsOut.join(char(10))).replace("§", " "));
