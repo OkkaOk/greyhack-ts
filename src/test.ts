@@ -43,30 +43,3 @@
 //   f: "bar",
 // };
 // let { d, e } = o
-
-const myObj = {
-	key1: 123,
-	key2: 555
-}
-
-print(Object.values(myObj))
-
-function test(...items: any[]) {
-	for (const item of items) {
-		print(item);
-	}
-}
-
-test()
-
-console.log(123);
-console.clear()
-
-type MyType = { 
-	shell?: GreyHack.Shell; 
-}
-const myObject: MyType = {
-	shell: getShell(),
-};
-
-print(myObject.shell?.ping("1.1.1.1"))

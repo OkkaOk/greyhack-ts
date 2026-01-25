@@ -1,5 +1,5 @@
-import { FluxCore } from "../core/FluxCore";
-import { FluxShell } from "../shell/FluxShell";
+import { FluxCore } from "../flux/core/FluxCore";
+import { FluxShell } from "../flux/shell/FluxShell";
 import type { CollectionData } from "../types/core";
 import type { MetaLibVuln } from "../types/hacking";
 import { ynPrompt } from "./libokka";
