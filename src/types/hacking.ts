@@ -1,4 +1,4 @@
-export type MetaLibVuln = {
+export interface MetaLibVuln {
 	library: string;
 	version: string;
 	address: string;

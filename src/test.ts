@@ -44,18 +44,40 @@
 // };
 // let { d, e } = o
 
+class Test {
+	constructor();
+	constructor(asd?: any) {
+
+	}
+    
+	hello(): number;
+    hello(asd?: any): number | string {
+        console.log("hello2")
+		if (asd) 
+			return ""
+		else
+			return 2
+    }
 
 
-function test() {
-	return 5;
+	asd = function() {
+		return 5;
+	}
+	asd2 = () => {
+
+	}
 }
 
-type MyType = {
-	func?(): number
+abstract class Asd {
+	abstract get value(): number;
 }
 
-const myObj: MyType = {
-	func: test,
-}
+class AAA extends Asd {
+	override get value(): number {
+		return 4
+	}
 
-console.log(myObj.func?.())
+	static set test(val: number) {
+
+	}
+}

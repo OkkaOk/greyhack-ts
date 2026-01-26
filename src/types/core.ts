@@ -5,13 +5,13 @@ import { Command } from "../flux/shell/Command";
 import { Process } from "../flux/shell/Process";
 import type { MetaLibVuln } from "./hacking";
 
-export type CollectionData = {
+export interface CollectionData {
 	"mails": Record<string, string>;
 	"users": Record<string, string>;
 	"banks": Record<string, string>;
 };
 
-export type DBSchema = {
+export interface DBSchema {
 	hashes: {
 		plain: string;
 		hash: string;
@@ -34,10 +34,10 @@ export type DBSchema = {
 		key: string;
 		value: string | number;
 	};
-	secrets: Record<string, string>
+	secrets: Record<string, string>,
 };
 
-export type FluxCoreGCO = {
+export interface FluxCoreGCO {
 	exiting: boolean;
 	nonFluxWarned: boolean;
 	crawlingLocally: boolean;
@@ -50,18 +50,20 @@ export type FluxCoreGCO = {
 	visitedDevices: string[]; // For crawler
 };
 
-export type Pipeline = {
+export interface PipelineStage {
+	tokens: string[];
+	process: Process;
+	invalid: boolean;
+};
+
+export interface Pipeline {
 	id: number;
 	tokens: string[];
 	condition: null | "AND" | "OR";
-	stages: {
-		tokens: string[];
-		process: Process;
-		invalid: boolean;
-	}[];
+	stages: PipelineStage[];
 };
 
-export type FluxShellGCO = {
+export interface FluxShellGCO {
 	currPID: number;
 	pipelines: Pipeline[];
 	prevPipeline: Pipeline | null;

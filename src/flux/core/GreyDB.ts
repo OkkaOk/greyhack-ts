@@ -1,4 +1,6 @@
-type DBSchema = Record<PropertyKey, Record<string, any>>;
+interface BaseDBSchema {
+	[tableName: PropertyKey]: Record<string, any>;
+};
 
 type QueryOperator = "$eq" | "$ne" | "$gt" | "$gte" | "$lt" | "$lte" | "$contains";
 
@@ -125,7 +127,7 @@ class DBTable implements DBTableType {
 	}
 }
 
-export class GreyDB<Schema extends DBSchema> {
+export class GreyDB<Schema = BaseDBSchema> {
 	classID = "database";
 	shell: GreyHack.Shell;
 	folder = "/home/guest/database";

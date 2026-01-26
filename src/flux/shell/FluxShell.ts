@@ -1,4 +1,4 @@
-import type { FluxShellGCO, GCOType, Pipeline } from "../../types/core";
+import type { FluxShellGCO, GCOType, Pipeline, PipelineStage } from "../../types/core";
 import { isQuoted, resolvePath } from "../../utils/libokka";
 import { Command } from "./Command";
 import { Process } from "./Process";
@@ -37,7 +37,7 @@ print = (value: any, replaceText = false) => {
 	return null;
 };
 
-if (globals.hasIndex("IS_GREYBEL")) {
+if ("IS_GREYBEL" in globals) {
 	const oldUserInput = userInput;
 	userInput = (message = "", isPassword = false, anyKey = false, _addToHistory = false) => oldUserInput(message, isPassword, anyKey);
 
@@ -527,7 +527,7 @@ export class FluxShell {
 	static parsePipelineStages(pipeline: Pipeline) {
 		if (pipeline.stages.length || !pipeline.tokens.length) return;
 
-		function createStage(): Pipeline["stages"][number] {
+		function createStage(): PipelineStage {
 			return {
 				tokens: [],
 				process: FluxShell.mainProcess.clone(),
