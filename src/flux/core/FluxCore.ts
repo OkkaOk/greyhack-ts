@@ -86,6 +86,7 @@ export class FluxCore {
 			data: {},
 			visitedDevices: [],
 			crawlPublicIp: "",
+			crawlingLocally: false,
 			currentCtf: null,
 			nonFluxWarned: false,
 			exiting: false,
@@ -238,6 +239,12 @@ export class FluxCore {
 	}
 
 	static scpFlux(targetShell: GreyHack.Shell, folder?: string): boolean {
+		const currSession = this.currSession();
+		if (!currSession.shell) {
+			FluxShell.currProcess.write(2, `Failed to scp flux as the current session doesn't have a shell.`);
+			return false;
+		}
+
 		if (!folder) folder = "/home/guest";
 
 		if (!targetShell.hostComputer.file(folder)) {
@@ -246,7 +253,7 @@ export class FluxCore {
 
 		const scpResult = this.currSession().shell!.scp(programPath(), folder, targetShell);
 		if (isType(scpResult, "string")) {
-			print("<color=red>" + scpResult);
+			FluxShell.currProcess.write(2, scpResult);
 			return false;
 		}
 
@@ -267,7 +274,7 @@ export class FluxCore {
 
 		const cryptoSession = this.raw.sessionPath.find(s => s.crypto !== null);
 		if (!cryptoSession) {
-			print("<color=red>Failed to decipher password as I don't have the crypto library");
+			FluxShell.currProcess.write(2, "Failed to decipher password as none of the active sessions have the crypto library");
 			return null;
 		}
 

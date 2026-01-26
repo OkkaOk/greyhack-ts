@@ -24,8 +24,8 @@ const quitCmd = new Command({
 
 quitCmd.run = (_args, _opts, _process) => exit("");
 
-include("./commands/help.ts");
-include("./coin-commands");
+include("../flux/commands/help.ts");
+include("./commands");
 
 FluxShell.raw.commands["help"].category = "None";
 
@@ -35,10 +35,7 @@ if (!globals.blockChain) exit("<color=red>Failed to find blockchain.so");
 const coin = globals.blockChain.getCoin("flux", "okka", "kissa") as GreyHack.Coin;
 if (!isType(coin, "coin")) exit(`<color=red>Failed to get the flux coin: ${coin}`);
 
-print("<color=#7fff00>Login to your wallet");
-globals.walletUsername = userInput("Username > ");
-globals.walletPassword = userInput("Password > ", true);
-globals.wallet = globals.blockChain.loginWallet(globals.walletUsername, globals.walletPassword) as GreyHack.Wallet;
+FluxShell.handleInput("wallet login");
 if (!isType(globals.wallet, "wallet")) exit("<color=red>Failed to get your wallet");
 
 globals.userSubWallets = [];

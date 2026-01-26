@@ -117,7 +117,7 @@ export class Session {
 		}
 
 		if (this.isRshellClient) {
-			const procs = slice(this.computer.showProcs().split(char(10)), 1);
+			const procs = this.computer.showProcs().split(char(10)).slice(1);
 			for (const item of procs) {
 				const parsedItem = item.split(" ");
 				const pid = parsedItem[1]?.toInt();

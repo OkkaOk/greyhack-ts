@@ -43,3 +43,19 @@
 //   f: "bar",
 // };
 // let { d, e } = o
+
+
+
+function test() {
+	return 5;
+}
+
+type MyType = {
+	func?(): number
+}
+
+const myObj: MyType = {
+	func: test,
+}
+
+console.log(myObj.func?.())

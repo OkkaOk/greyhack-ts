@@ -4,9 +4,10 @@ interface String {
 	padLeft(count: number, padChar?: string): string;
 	padRight(count: number, padChar?: string): string;
 	format(...formats: (string | number)[]): string;
-	color(color: string): string;
 	removeTags(): string;
 	rainbow(rainbowLength?: number, offset?: number): string
+	color(color: string): string;
+	bold(): string;
 }
 
 interface Number {

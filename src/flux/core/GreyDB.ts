@@ -66,16 +66,6 @@ class DBHelper {
 	// }
 }
 
-const dbVersion = 1;
-const gcoKey = "fpZ1mDjzVhH6IVejN5jf" as const;
-const binaryCode = [
-	'if params.len == 0 then exit("<color=red>No params given!")',
-	'token = params.pull()',
-	'if md5(obj.owner.name + obj.owner.passwordHash) != token then',
-	'	exit("<color=red>Invalid password!")',
-	'end if'
-].join(char(10));
-
 class DBTable implements DBTableType {
 	classID = "dbtable";
 	name: PropertyKey;
@@ -144,6 +134,16 @@ export class GreyDB<Schema extends DBSchema> {
 	owner: { name: string; passwordHash: string; };
 
 	modified = false;
+
+	dbVersion = 1;
+	gcoKey = "fpZ1mDjzVhH6IVejN5jf" as const;
+	binaryCode = [
+		'if params.len == 0 then exit("<color=red>No params given!")',
+		'token = params.pull()',
+		'if md5(obj.owner.name + obj.owner.passwordHash) != token then',
+		'	exit("<color=red>Invalid password!")',
+		'end if'
+	].join(char(10));
 
 	constructor(shell?: GreyHack.Shell) {
 		this.shell = getShell();
@@ -349,12 +349,12 @@ export class GreyDB<Schema extends DBSchema> {
 		DBHelper.createSource(computer, rndName, this.folder, srcFileContent, srcFiles);
 
 		finalFileContent.push([
-			`get_custom_object["${gcoKey}"] = {}`,
-			`obj = get_custom_object["${gcoKey}"]`,
+			`get_custom_object["${this.gcoKey}"] = {}`,
+			`obj = get_custom_object["${this.gcoKey}"]`,
 			"obj.tables = {}",
 			`obj.owner = ${this.owner}`,
-			`obj.version = ${dbVersion}`,
-			binaryCode
+			`obj.version = ${this.dbVersion}`,
+			this.binaryCode
 		].join(char(10)));
 
 		for (const srcFile of srcFiles) {
@@ -490,12 +490,12 @@ export class GreyDB<Schema extends DBSchema> {
 			return false;
 		}
 
-		if (!Object.hasOwn(getCustomObject(), gcoKey)) return false;
+		if (!Object.hasOwn(getCustomObject(), this.gcoKey)) return false;
 
 		this.tables = {} as any;
-		this.owner = getCustomObject()[gcoKey]["owner"];
+		this.owner = getCustomObject()[this.gcoKey]["owner"];
 
-		const tables: typeof this.tables = getCustomObject()[gcoKey]["tables"];
+		const tables: typeof this.tables = getCustomObject()[this.gcoKey]["tables"];
 		for (const tableName of Object.keys(tables)) {
 			this.addTable(tableName);
 			const table = this.tables[tableName];
@@ -514,7 +514,7 @@ export class GreyDB<Schema extends DBSchema> {
 			table.calculateIndexes();
 		}
 
-		Object.remove(getCustomObject(), gcoKey);
+		Object.remove(getCustomObject(), this.gcoKey);
 
 		const tookMs = Math.round((time() - startTime) * 1000);
 		if (tookMs > 2000) {

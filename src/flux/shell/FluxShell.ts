@@ -20,7 +20,7 @@ print = (value: any, replaceText = false) => {
 	const gco = getCustomObject<GCOType>();
 	let fd = 1;
 
-	if (gco.fluxShell && gco.fluxShell.activeProcesses) {
+	if (gco.fluxShell && gco.fluxShell.activeProcesses.length) {
 		// A bit spaghetti
 		if (value.indexOf("<color=red>") == 0) {
 			fd = 2;

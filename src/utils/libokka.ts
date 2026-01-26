@@ -5,6 +5,10 @@ String.prototype.color = function (color = "red") {
 	return `<color=${color}>${this}</color>`;
 };
 
+String.prototype.bold = function() {
+	return `<b>${this}</b>`;
+}
+
 String.prototype.replaceFirst = function (oldValue, newValue, offset) {
 	const str = this as string;
 	if (!oldValue) return str;

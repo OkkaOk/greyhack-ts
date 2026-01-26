@@ -40,6 +40,7 @@ export type DBSchema = {
 export type FluxCoreGCO = {
 	exiting: boolean;
 	nonFluxWarned: boolean;
+	crawlingLocally: boolean;
 	crawlPublicIp: string;
 	data: Record<string, CollectionData>;
 	database: GreyDB<DBSchema>;
