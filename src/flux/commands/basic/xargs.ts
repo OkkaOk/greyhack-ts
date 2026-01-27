@@ -1,5 +1,6 @@
 import { Command, type ExitCodeType } from "../../shell/Command";
 import { EXIT_CODES, FluxShell } from "../../shell/FluxShell";
+import { tokenize } from "../../shell/tokenize";
 
 const command = new Command({
 	name: "xargs",
@@ -44,7 +45,7 @@ command.run = function (args, options, process) {
 	const lines = process.read(0);
 
 	// We need to tokenize this because args[0] might be a subcommand like "session use"
-	const commandTokens = FluxShell.tokenize(args[0]);
+	const commandTokens = tokenize(args[0]);
 	const commandName = commandTokens[0];
 	const commandArgs = slice(commandTokens, 1)
 	const cmd = FluxShell.getCommand(commandName, commandArgs);
@@ -83,7 +84,7 @@ command.run = function (args, options, process) {
 		if (delimiter)
 			lineArgs = lineArgs.concat(line.split(delimiter));
 		else
-			lineArgs = lineArgs.concat(FluxShell.tokenize(line));
+			lineArgs = lineArgs.concat(tokenize(line));
 
 		let commandArgs = initialArgs;
 		if ("replace" in options)

@@ -226,7 +226,7 @@ export class GreyDB<Schema = BaseDBSchema> {
 		if (limit && limit <= 0) return [];
 
 		if (!query) query = {};
-		if (!Object.size(query)) return slice(table.rows, 0, limit);
+		if (!Object.size(query)) return table.rows.slice(0, limit);
 
 		const output: Schema[Name][] = [];
 		for (const index of table.getRowIndexes(query)) {
@@ -292,7 +292,7 @@ export class GreyDB<Schema = BaseDBSchema> {
 		const computer = this.shell.hostComputer;
 		const startTime = time();
 
-		const rndName = slice(md5(Math.random() + currentDate()), 0, 6);
+		const rndName = md5(Math.random() + currentDate()).slice(0, 6);
 		const rndSrc = rndName + ".src";
 		const rndFullPath = this.folder + "/" + rndSrc;
 
@@ -332,8 +332,8 @@ export class GreyDB<Schema = BaseDBSchema> {
 				const currArrStr = str(currArr);
 				if (currArrStr.length > 150000) {
 					const halfway = Math.ceil(currArr.length / 2);
-					arr.push(slice(currArr, 0, halfway));
-					arr.push(slice(currArr, halfway));
+					arr.push(currArr.slice(0, halfway));
+					arr.push(currArr.slice(halfway));
 					continue;
 				}
 

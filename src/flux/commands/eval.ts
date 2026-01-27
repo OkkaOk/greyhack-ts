@@ -8,7 +8,7 @@ const command = new Command({
 	category: "Data Operations",
 	examples: [
 		"eval print(2+2)",
-		`eval "print('hello world')"`
+		`eval 'print("hello world")'`
 	],
 	arguments: [
 		{
@@ -33,7 +33,7 @@ const command = new Command({
 command.run = function (args, options, process) {
 	const session = FluxCore.currSession();
 
-	const randomName = md5(Math.random() + currentDate());
+	const randomName = md5(Math.random() + currentDate()).slice(0, 6);
 	const randomSrc = randomName + ".src";
 	const randomFullPath = `${session.workingDir}/${randomSrc}`;
 

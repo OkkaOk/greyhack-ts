@@ -1,7 +1,8 @@
 import type { FluxShellGCO, GCOType, Pipeline, PipelineStage } from "../../types/core";
-import { isQuoted, resolvePath } from "../../utils/libokka";
+import { resolvePath } from "../../utils/libokka";
 import { Command } from "./Command";
 import { Process } from "./Process";
+import { expandVariables, tokenize } from "./tokenize";
 
 export const EXIT_CODES = {
 	CMD_EXEC_FAIL: 123,
@@ -46,11 +47,6 @@ if ("IS_GREYBEL" in globals) {
 		return "";
 	};
 }
-
-type ExtToken = {
-	value: string;
-	original: boolean;
-};
 
 export class FluxShell {
 	static raw: FluxShellGCO;
@@ -123,232 +119,6 @@ export class FluxShell {
 		this.raw = gco.fluxShell;
 
 		return gco.fluxShell;
-	}
-
-	static expandVariables(input: string): string {
-		if (!input.length) return "";
-
-		const varMatches = input.matches(/\$[^"" ]+/);
-		Object.assign(varMatches, input.matches(/\$\{[^}]+\}/));
-
-		for (const index of Object.keys(varMatches)) {
-			// Escaped
-			if (index > 0 && input[index - 1] === "\\") {
-				input = slice(input, 0, index - 1) + slice(input, index);
-				continue;
-			}
-
-			let varName = slice(varMatches[index], 1); // Skip $ character
-			if (varName[0] === "{" && varName[-1] === "}")
-				varName = slice(varName, 1, -1);
-
-			if (!(varName in this.raw.env)) continue;
-
-			input = slice(input, 0, index) + this.raw.env[varName] + slice(input, index + varMatches[index].length);
-		}
-
-		return input;
-	}
-
-	static expandBraces(tokens: ExtToken[]): ExtToken[] {
-		return tokens;
-	}
-
-	static expandTilde(tokens: ExtToken[]): ExtToken[] {
-		let home = homeDir();
-		if (this.raw.core) {
-			home = this.raw.core.currSession().homeDir();
-		}
-
-		for (const token of tokens) {
-			if (token.value[0] === "~") {
-				token.value = home + slice(token.value, 1);
-			}
-		}
-
-		return tokens;
-	}
-
-	static expandParameters(tokens: ExtToken[]): ExtToken[] {
-		for (const token of tokens) {
-			token.value = this.expandVariables(token.value);
-		}
-		return tokens;
-	}
-
-	static arithmeticExpansion(tokens: ExtToken[]): ExtToken[] {
-		return tokens;
-	}
-
-	static splitWords(tokens: ExtToken[]): ExtToken[] {
-		return tokens;
-	}
-
-	static expandFilename(tokens: ExtToken[]): ExtToken[] {
-		const computer = this.currComputer;
-
-		let workingDir = currentPath();
-		if (this.raw.core)
-			workingDir = this.raw.core.currSession().workingDir;
-
-		for (let i = 0; i < tokens.length; i++) {
-			if (!tokens[i].original) continue;
-			if (isQuoted(tokens[i].value)) continue;
-
-			// Check if token doesn't contain glob characters
-			if (tokens[i].value.indexOf("*") == null && tokens[i].value.indexOf("?") == null) {
-				continue;
-			}
-
-			const matches = this.globMatch(tokens[i].value, computer, workingDir);
-
-			// If no matches found, leave the token as-is (bash behavior)
-			if (matches.length === 0) {
-				continue;
-			}
-
-			tokens[i].value = matches[0];
-			tokens[i].original = false;
-
-			// If matches found, expand to all matches
-			for (let j = matches.length - 1; j >= 1; j--) {
-				tokens.insert(i + 1, {
-					value: matches[j]!,
-					original: false,
-				});
-			}
-		}
-
-		return tokens;
-	}
-
-	static removeQuotes(tokens: ExtToken[]): ExtToken[] {
-		for (const token of tokens) {
-			if (!token.original) continue;
-
-			let current = "";
-			let quoteChar = "";
-			let inQuotes = false;
-
-			for (const c of token.value) {
-				if (inQuotes && c == quoteChar) {
-					inQuotes = false;
-					quoteChar = "";
-					continue;
-				}
-
-				if (!inQuotes && (c == char(34) || c == char(39))) {
-					inQuotes = true;
-					quoteChar = c;
-					continue;
-				}
-
-				if (inQuotes) {
-					current += c;
-					continue;
-				}
-
-				current += c;
-			}
-
-			token.value = current;
-		}
-
-		return tokens;
-	}
-
-	static tokenize(input: string): string[] {
-		if (!input) return [];
-
-		input = input.trim();
-		if (!input.length) return [];
-
-		if (input.indexOf("!!") != null && this.raw.history.length) {
-			const lastCmd = this.raw.history[-1];
-			input = input.replace("!!", lastCmd);
-			print(input);
-		}
-
-		let inQuotes = false;
-		let quoteChar = "";
-		const tokens: string[] = [];
-		const data = {
-			current: "",
-		};
-
-		function pushCurrent() {
-			if (!data.current) return;
-			tokens.push(data.current);
-			data.current = "";
-		}
-
-		let i = -1;
-		while (i < input.length - 1) {
-			i += 1;
-			const c = input[i];
-
-			if (inQuotes && c == quoteChar) {
-				inQuotes = false;
-				quoteChar = "";
-				data.current += c;
-				continue;
-			}
-
-			if (!inQuotes && (c == char(34) || c == char(39))) { // " or '
-				inQuotes = true;
-				quoteChar = c;
-				data.current += c;
-				continue;
-			}
-
-			if (inQuotes) {
-				data.current += c;
-				continue;
-			}
-
-			const nextTwo = slice(input, i, i + 2);
-			if (c == " ") {
-				pushCurrent();
-			}
-			else if (nextTwo == "&&") {
-				pushCurrent();
-				tokens.push("&&");
-				i += 1;
-			}
-			else if (nextTwo == "||") {
-				pushCurrent();
-				tokens.push("||");
-				i += 1;
-			}
-			else if (c == ";") {
-				pushCurrent();
-				tokens.push(c);
-			}
-			else {
-				data.current += c;
-			}
-		}
-
-		pushCurrent();
-
-		let extTokens: ExtToken[] = [];
-		for (const token of tokens) {
-			extTokens.push({
-				value: token,
-				original: true,
-			});
-		}
-
-		// https://www.gnu.org/software/bash/manual/html_node/Shell-Expansions.html
-		extTokens = this.expandBraces(extTokens);
-		extTokens = this.expandTilde(extTokens);
-		extTokens = this.expandParameters(extTokens);
-		extTokens = this.arithmeticExpansion(extTokens);
-		extTokens = this.splitWords(extTokens);
-		extTokens = this.expandFilename(extTokens);
-		extTokens = this.removeQuotes(extTokens);
-
-		return extTokens.map(ext => ext.value);
 	}
 
 	static getCommand(commandName: string, args: string[]): Command {
@@ -542,7 +312,7 @@ export class FluxShell {
 		// Recursively do alias expansion for the first token in the pipeline
 		let firstToken = pipeline.tokens[0];
 		while ((firstToken in this.raw.aliases) && !(firstToken in expandedTokens)) {
-			const aliasTokens = this.tokenize(this.raw.aliases[firstToken]);
+			const aliasTokens = tokenize(this.raw.aliases[firstToken]);
 			pipeline.tokens = aliasTokens.concat(slice(pipeline.tokens, 1));
 			expandedTokens[firstToken] = true;
 			firstToken = pipeline.tokens[0];
@@ -624,7 +394,7 @@ export class FluxShell {
 					let input = userInput("> ");
 					if (input === nextToken) break;
 
-					input = this.expandVariables(input);
+					input = expandVariables(input);
 					currStage.process.write(0, input);
 				}
 				pipeline.tokens.shift(); // Consume the nextToken
@@ -759,7 +529,7 @@ export class FluxShell {
 	}
 
 	static handleInput(input: string) {
-		const inputTokens = this.tokenize(input);
+		const inputTokens = tokenize(input);
 
 		this.raw.pipelines = this.parsePipelines(inputTokens);
 		this.raw.prevPipeline = null;
@@ -827,85 +597,5 @@ export class FluxShell {
 		const currPath = session.workingDir.replace(session.homeDir(), "~");
 		const userSymbol = user === "root" ? "#" : "$";
 		return `<b><color=${color}>#${this.raw.core.raw.sessionPath.length} ${user}@${session.localIp}</color>:<color=#28A9DB>${currPath}</color>${userSymbol} `;
-	}
-
-	private static globMatch(pattern: string, computer: GreyHack.Computer, workingDir: string): string[] {
-		const matches: string[] = [];
-
-		// Split pattern into directory and filename parts
-		let dirPath = workingDir;
-		let givenDirPath = "";
-		let filePattern = pattern;
-
-		const lastSlash = pattern.lastIndexOf("/");
-		if (lastSlash !== -1) {
-			givenDirPath = pattern.slice(0, lastSlash);
-			dirPath = resolvePath(workingDir, givenDirPath);
-			filePattern = pattern.slice(lastSlash + 1);
-		}
-
-		// Get directory contents
-		const dir = computer.file(dirPath);
-		if (!dir || !dir.isFolder()) {
-			return matches;
-		}
-
-		const files: GreyHack.File[] = [];
-
-		files.push(...dir.getFiles()!, ...dir.getFolders()!);
-
-		for (const file of files) {
-			if (this.globMatchesFile(filePattern, file.name!)) {
-				let outText = file.name!;
-				if (givenDirPath)
-					outText = givenDirPath + "/" + outText;
-
-				matches.push(outText);
-			}
-		}
-
-		// Sort matches alphabetically (bash behavior)
-		matches.sort();
-		return matches;
-	}
-
-	private static globMatchesFile(pattern: string, filename: string): boolean {
-		let p = 0; // pattern index
-		let f = 0; // filename index
-
-		while (p < pattern.length && f < filename.length) {
-			if (pattern[p] === "*") {
-				// * matches zero or more characters
-				if (p === pattern.length - 1) {
-					// * at end matches everything
-					return true;
-				}
-
-				// Try to match rest of pattern
-				const restPattern = pattern.slice(p + 1);
-				while (f <= filename.length) {
-					if (this.globMatchesFile(restPattern, filename.slice(f))) {
-						return true;
-					}
-					f++;
-				}
-				return false;
-			}
-			else if (pattern[p] === "?") {
-				// ? matches exactly one character
-				p++;
-				f++;
-			}
-			else {
-				// Literal character match
-				if (pattern[p] !== filename[f]) {
-					return false;
-				}
-				p++;
-				f++;
-			}
-		}
-
-		return p === pattern.length && f === filename.length;
 	}
 }
