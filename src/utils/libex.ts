@@ -84,13 +84,13 @@ export class Libex {
 			const info = homeSession.metax.scanAddress(metaLib, address)!;
 			if (verbose) FluxShell.mainProcess.write(1, `${address}\\n${info}`);
 
-			const segments = slice(info.split("Unsafe check: "), 1);
+			const segments = info.split("Unsafe check: ").slice(1);
 			for (const segment of segments) {
 				const labelStart = segment.indexOf("<b>")!;
 				const labelEnd = segment.indexOf("</b>")!;
 				const hasRequirements = segment.indexOf("*") !== null;
 
-				const unsecZone = slice(segment, labelStart + 3, labelEnd);
+				const unsecZone = segment.slice(labelStart + 3, labelEnd);
 
 				const vuln: MetaLibVuln = {
 					library: metaLib.libName,
