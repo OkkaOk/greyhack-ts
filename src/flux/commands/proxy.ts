@@ -134,17 +134,13 @@ command.subcommands[2].run = function (_args, _options, process) {
 
 	const shells = [getShell()];
 	for (const account of accounts) {
-		let exists = false;
-		for (const session of FluxCore.raw.sessionPath) {
-			if (session.publicIp === account.ip) {
-				exists = true;
-				break;
-			}
+		const existing = FluxCore.getSession(account.ip);
+		if (existing && existing.shell) {
+			shells.push(existing.shell);
+			continue;
 		}
 
-		if (exists) continue;
-
-		const shell = shells[-1].connectService(account.ip, 22, account.username, account.password);
+		const shell = shells[shells.length - 1].connectService(account.ip, 22, account.username, account.password);
 		if (!isType(shell, "shell")) {
 			process.write(2, `${account.ip} - ${shell}`);
 			continue;
@@ -161,14 +157,11 @@ command.subcommands[2].run = function (_args, _options, process) {
 		return EXIT_CODES.GENERAL_ERROR;
 	}
 
-	const computer = shells[-1].hostComputer;
+	const proxyShell = shells[shells.length - 1];
+	const computer = proxyShell.hostComputer;
 	let session = FluxCore.getSession(computer.publicIp, computer.localIp, Libex.computerPrivileges(computer));
-	if (session) {
-		session.shell = shells[-1];
-		session.computer = shells[-1].hostComputer;
-	}
-	else {
-		session = FluxCore.createSession(shells[-1], false, false, true);
+	if (!session) {
+		session = FluxCore.createSession(proxyShell, false, false, true);
 		if (!session) {
 			process.write(2, "Failed to create session for proxy");
 			return EXIT_CODES.GENERAL_ERROR;
@@ -176,5 +169,6 @@ command.subcommands[2].run = function (_args, _options, process) {
 	}
 
 	process.write(1, `Bounced through ${shells.length - 1} proxies!`);
+	session.connect();
 	return EXIT_CODES.SUCCESS;
 };

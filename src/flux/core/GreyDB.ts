@@ -397,9 +397,11 @@ export class GreyDB<Schema = BaseDBSchema> {
 		return true;
 	}
 
-	/** Login to your account so you can use your own tables 
+	/** 
+	 * Login to your account so you can use your own tables 
 	 * 
-	 * If the account didn't exist, one will be created */
+	 * If the account didn't exist, one will be created
+	 */
 	login(username: string, password: string): boolean {
 		if (!username) {
 			this.print("<color=red>You didn't give a username to login to", 1);

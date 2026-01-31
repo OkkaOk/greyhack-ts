@@ -12,8 +12,8 @@ type ProcessResources = {
 export class Process {
 	classID = "process";
 	pid: number;
-	nextFd = 3;
-	name;
+	nextFd: number;
+	name: string;
 	parent: Process;
 	resources: ProcessResources;
 
@@ -33,6 +33,8 @@ export class Process {
 				2: new Stream("stderr", "rw"),
 			};
 		}
+
+		this.nextFd = Object.size(this.resources);
 	}
 
 	/** Clones the process but gives it a new PID */
@@ -199,13 +201,13 @@ export class Process {
 
 		// I could save the file everytime something gets written to it but I like
 		// it this way when we only save after we close it (typically after command)
-		if (stream.name == "fileStream" && (stream.mode == "w" || stream.mode == "rw")) {
-			if (!stream.file!.hasPermission("w")) {
-				this.write(2, "No write permission to file: " + stream.file!.path());
+		if (stream.file && (stream.mode == "w" || stream.mode == "rw")) {
+			if (!stream.file.hasPermission("w")) {
+				this.write(2, "No write permission to file: " + stream.file.path());
 				return false;
 			}
 
-			const result = stream.file!.setContent(stream.data);
+			const result = stream.file.setContent(stream.data);
 
 			if (isType(result, "string")) {
 				this.write(2, "Failed to write to file: " + result);
