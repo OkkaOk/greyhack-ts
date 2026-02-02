@@ -5,7 +5,7 @@ include("./prototypeExtensions.ts")
 export function updateLib(libPath: string): GreyHack.LibTypes[keyof GreyHack.LibTypes] | null {
 	let lib = includeLib(libPath);
 	if (!lib) {
-		print(`A library doesn't exist at path: ${libPath}`);
+		console.log(`A library doesn't exist at path: ${libPath}`);
 		return null;
 	}
 
@@ -19,19 +19,19 @@ export function updateLib(libPath: string): GreyHack.LibTypes[keyof GreyHack.Lib
 	const libName = basename(libPath);
 	let result = session.apt.checkUpgrade(libPath);
 	if (isType(result, "string")) {
-		print(`<color=red>Error while checking upgrades for ${libName}: ${result}`);
+		console.log(`<color=red>Error while checking upgrades for ${libName}: ${result}`);
 		return lib;
 	}
 
 	// No updates
 	if (result === false) return lib;
 
-	print(`<color=green>Updating ${libName}`);
+	console.log(`<color=green>Updating ${libName}`);
 	session.computer.file(libPath)!.delete();
 	result = session.apt.install(libName, parentPath(libPath));
 
 	if (isType(result, "string")) {
-		print(`<color=red>Failed to update ${libName}: ${result}`);
+		console.log(`<color=red>Failed to update ${libName}: ${result}`);
 		return lib;
 	}
 
@@ -51,7 +51,7 @@ export function requireLib<Lib extends keyof GreyHack.LibTypes>(libName: Lib): G
 
 	const currSession = gco.fluxCore.sessionPath[-1];
 	if (!currSession.computer.isNetworkActive()) {
-		print(`Failed to load ${libName} and there is no internet connection to download it.`);
+		console.log(`Failed to load ${libName} and there is no internet connection to download it.`);
 		return null;
 	}
 
@@ -68,11 +68,11 @@ export function requireLib<Lib extends keyof GreyHack.LibTypes>(libName: Lib): G
 	}
 
 	if (currSession.apt) {
-		print(`Installing ${libName}...`);
+		console.log(`Installing ${libName}...`);
 		const result = currSession.apt.install(libName);
 
 		if (isType(result, "string")) {
-			print(`Failed to install ${libName}: ${result}`);
+			console.log(`Failed to install ${libName}: ${result}`);
 			return null;
 		}
 
@@ -80,7 +80,7 @@ export function requireLib<Lib extends keyof GreyHack.LibTypes>(libName: Lib): G
 		if (lib) return lib;
 	}
 
-	print(`<color=red>Error: Can't find ${libName} library in the /lib path or the current folder and failed to install it`);
+	console.log(`<color=red>Error: Can't find ${libName} library in the /lib path or the current folder and failed to install it`);
 	return null;
 }
 
@@ -95,7 +95,7 @@ export function ynPrompt(prompt: string, defaultChoice: "y" | "n" | "" = ""): "y
 		if (!input) input = defaultChoice;
 
 		if (input.length > 0 && (input[0] === "y" || input[0] === "n")) break;
-		print("invalid input");
+		console.log("invalid input");
 	}
 
 	return input[0];

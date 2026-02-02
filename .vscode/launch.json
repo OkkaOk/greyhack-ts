@@ -6,7 +6,20 @@
 			"name": "Transpile file",
 			"runtimeExecutable": "greyts",
 			"cwd": "${workspaceFolder}",
-			"args": ["transpile", "${file}"]
+			"args": [
+				"transpile",
+				"${file}"
+			]
+		},
+		{
+			"type": "bun",
+			"request": "launch",
+			"name": "Run Grey TS File",
+			"runtimeArgs": [
+				"--preload",
+				"@grey-ts/runtime"
+			],
+			"program": "${file}"
 		}
 	]
 }

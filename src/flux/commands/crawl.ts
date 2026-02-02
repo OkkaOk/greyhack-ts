@@ -111,8 +111,8 @@ command.funcs.exploitRemote = function(target) {
 	}
 
 	if (!isType(ports, "list")) {
-		print(`<color=red><b>${ports}`);
-		print(`<color=red><b>${session.publicIp} ${session.localIp} ${target}`);
+		console.log(`<color=red><b>${ports}`);
+		console.log(`<color=red><b>${session.publicIp} ${session.localIp} ${target}`);
 		return;
 	}
 
@@ -155,10 +155,10 @@ command.funcs.getNextSessions = function() {
 command.funcs.crawl = function(depth) {
 	if (depth > 6) exit("Going too deep!");
 
-	print("<color=#FFD82A>Current depth: " + depth);
+	console.log("<color=#FFD82A>Current depth: " + depth);
 	const session = FluxCore.currSession();
 	if (!session.shell) {
-		print(`<color=red>Current session doesn't have shell`);
+		console.log(`<color=red>Current session doesn't have shell`);
 		return;
 	}
 
@@ -181,9 +181,9 @@ command.funcs.crawl = function(depth) {
 	if (depth === 1 && !FluxCore.raw.crawlingLocally) {
 		const result = Libex.corruptLog(session.shell);
 		if (isType(result, "string"))
-			print(`<color=red>Failed to corrupt log: ${result}`);
+			console.log(`<color=red>Failed to corrupt log: ${result}`);
 		else
-			print(`<color=green>Log corrupted for: ${session.localIp}`);
+			console.log(`<color=green>Log corrupted for: ${session.localIp}`);
 	}
 
 	const nextSessions = this.getNextSessions();
@@ -199,7 +199,7 @@ command.funcs.crawl = function(depth) {
 		FluxCore.raw.sessionPath.pop();
 
 		if (isType(launchRes, "string"))
-			print(launchRes.color("red"));
+			console.log(launchRes.color("red"));
 
 		const file = nextSession.computer.file(path);
 		if (file) file.delete();

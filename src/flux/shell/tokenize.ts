@@ -147,7 +147,7 @@ export function tokenize(input: string): string[] {
 	if (input.indexOf("!!") != null && FluxShell.raw.history.length) {
 		const lastCmd = FluxShell.raw.history[-1];
 		input = input.replace("!!", lastCmd);
-		print(input);
+		console.log(input);
 	}
 
 	let inQuotes = false;

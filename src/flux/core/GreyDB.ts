@@ -4,9 +4,9 @@ interface BaseDBSchema {
 
 type QueryOperator = "$eq" | "$ne" | "$gt" | "$gte" | "$lt" | "$lte" | "$contains";
 
-type Query<T> = Partial<{
-	[K in keyof T]: T[K] | { [OP in QueryOperator]?: T[K] };
-}>;
+type Query<T> = {
+	[K in keyof T]?: T[K] | { [OP in QueryOperator]?: T[K] };
+};
 
 interface DBTableType {
 	name: PropertyKey;
@@ -48,14 +48,14 @@ class DBHelper {
 
 		let res: any = computer.touch(folder, fileName);
 		if (isType(res, "string")) {
-			print(`<color=red>Failed to create source file: ${res}`);
+			console.log(`<color=red>Failed to create source file: ${res}`);
 			return false;
 		}
 
 		const srcFile = computer.file(`${folder}/${fileName}`)!;
 		res = srcFile.setContent(content);
 		if (isType(res, "string")) {
-			print(`<color=red>Failed to set source file content: ${res}`);
+			console.log(`<color=red>Failed to set source file content: ${res}`);
 			return false;
 		}
 
@@ -148,8 +148,7 @@ export class GreyDB<Schema = BaseDBSchema> {
 	].join(char(10));
 
 	constructor(shell?: GreyHack.Shell) {
-		this.shell = getShell();
-		if (shell) this.shell = shell;
+		this.shell = shell ?? getShell();
 
 		this.tables = {} as any;
 		this.owner = { name: "", passwordHash: "" };
@@ -157,7 +156,7 @@ export class GreyDB<Schema = BaseDBSchema> {
 
 	print(value: any, logLevel: number) {
 		if (this.logLevel < logLevel) return;
-		print(value);
+		console.log(value);
 	}
 
 	hasTable(tableName: string): boolean {
@@ -168,15 +167,12 @@ export class GreyDB<Schema = BaseDBSchema> {
 		tableName: Name,
 		primaryKey?: keyof Schema[Name]
 	): boolean {
-		const name = tableName;
-
 		if (tableName in this.tables) {
 			this.tables[tableName].primaryKey = primaryKey;
-			this.modified = true;
 			return true;
 		}
 
-		const newTable = new DBTable(name, primaryKey);
+		const newTable = new DBTable(tableName, primaryKey);
 		this.modified = true;
 		this.tables[tableName] = newTable;
 
@@ -501,7 +497,7 @@ export class GreyDB<Schema = BaseDBSchema> {
 
 		const tables: typeof this.tables = getCustomObject()[this.gcoKey]["tables"];
 		for (const tableName of Object.keys(tables)) {
-			this.addTable(tableName);
+			this.tables[tableName] = new DBTable(tableName);
 			const table = this.tables[tableName];
 
 			if (tables[tableName]?.primaryKey)

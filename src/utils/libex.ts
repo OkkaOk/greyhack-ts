@@ -143,7 +143,7 @@ export class Libex {
 			vuln.permission = result.owner!;
 		}
 		else if (isType(result, "computer")) {
-			this.handleComputer(result);
+			this.handleComputer(result, true);
 			vuln.permission = this.computerPrivileges(result);
 		}
 		else if (isType(result, "shell")) {

@@ -91,13 +91,13 @@ export class Session {
 
 		const success = FluxCore.scpFlux(this.shell, `/home/guest`);
 		if (!success) {
-			print("<color=red>Failed to scp flux to target!</color>");
+			console.log("<color=red>Failed to scp flux to target!</color>");
 			return false;
 		}
 
 		FluxCore.raw.sessionPath.push(this);
 		const res = this.shell.launch(`/home/guest/${basename(programPath())}`, launchParams);
-		if (isType(res, "string")) print(res.color("red"));
+		if (isType(res, "string")) console.log(res.color("red"));
 		FluxCore.raw.sessionPath.pop();
 
 		if (FluxCore.raw.exiting)
@@ -107,12 +107,12 @@ export class Session {
 
 	kill(): boolean {
 		if (this.isHome) {
-			print("You can't kill your home session!");
+			console.log("You can't kill your home session!");
 			return false;
 		}
 
 		if (FluxCore.currSession().id === this.id) {
-			print("You can't kill the current session!");
+			console.log("You can't kill the current session!");
 			return false;
 		}
 
@@ -126,14 +126,14 @@ export class Session {
 
 				if (name != "rshell_client") continue;
 				if (!isType(pid, "number")) {
-					print("<color=red>Failed to close rshell_client: failed to parse the show_procs");
+					console.log("<color=red>Failed to close rshell_client: failed to parse the show_procs");
 					continue;
 				}
 
 				const res = this.computer.closeProgram(pid);
 				if (!isType(res, "string")) break;
 
-				print("<color=red>Failed to close rshell_client: " + res);
+				console.log("<color=red>Failed to close rshell_client: " + res);
 			}
 		}
 

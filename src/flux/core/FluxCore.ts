@@ -34,7 +34,7 @@ export class FluxCore {
 
 				const proxyShell = getShell().connectService(proxy.publicIp, 22, "root", proxy.password);
 				if (!isType(proxyShell, "shell")) {
-					print(`<color=red>Failed to connect to saved proxy ${proxy.publicIp}: ${proxyShell}`);
+					console.log(`<color=red>Failed to connect to saved proxy ${proxy.publicIp}: ${proxyShell}`);
 					continue;
 				}
 
@@ -119,13 +119,13 @@ export class FluxCore {
 
 		gcosh.env["?"] = 0;
 
-		if (!globals.hasIndex("IS_GREYBEL")) {
+		if (!("IS_GREYBEL" in globals)) {
 			if (!("HACKSHOP_IP" in gcosh.env) && session.computer.isNetworkActive()) {
-				print("Fetching hackshop ip...");
+				console.log("Fetching hackshop ip...");
 				let ip = Libex.getIpWithPortOpen(1542);
 
 				if (!isValidIp(ip)) {
-					print("Failed to get it automatically in a timely manner");
+					console.log("Failed to get it automatically in a timely manner");
 					ip = userInput("Enter hackshop ip > ");
 				}
 
@@ -286,8 +286,8 @@ export class FluxCore {
 	}
 
 	static checkCredentials() {
-		if (globals.hasIndex("IS_GREYBEL")) {
-			print("<color=green>Greybel detected. No need for credentials");
+		if ("IS_GREYBEL" in globals) {
+			console.log("<color=green>Greybel detected. No need for credentials");
 			return;
 		}
 
@@ -341,13 +341,13 @@ export class FluxCore {
 			art[i] = "<b>" + art[i].rainbow(art[i].length, i * 2);
 		}
 
-		print(art.join(char(10)));
+		console.log(art.join(char(10)));
 
 		const dateSegments = currentDate().split(" - ");
 		const dateTime = dateSegments[1].split(":");
 		const hours = dateTime[0].toInt() as number;
 
 		const quote = quotes[hours % quotes.length];
-		print("<color=#73FF00>" + quote.rainbow() + char(10));
+		console.log("<color=#73FF00>" + quote.rainbow() + char(10));
 	}
 }

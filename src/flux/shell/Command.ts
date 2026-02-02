@@ -328,5 +328,5 @@ export class Command<T extends object = any> implements CommandData {
 			category: data.category 
 		});
 		return out;
-	}
+	};
 }
