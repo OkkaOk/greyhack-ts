@@ -22,7 +22,7 @@ class DBHelper {
 			const qvalue = query[key] as string | { [OP in QueryOperator]?: any };
 
 			if (!isType(qvalue, "map")) {
-				if (value != qvalue) return false;
+				if (value !== qvalue) return false;
 				continue;
 			}
 
@@ -138,7 +138,6 @@ export class GreyDB<Schema = BaseDBSchema> {
 	modified = false;
 
 	dbVersion = 1;
-	gcoKey = "fpZ1mDjzVhH6IVejN5jf" as const;
 	binaryCode = [
 		'if params.len == 0 then exit("<color=red>No params given!")',
 		'token = params.pull()',
@@ -320,7 +319,7 @@ export class GreyDB<Schema = BaseDBSchema> {
 				srcFileContent.push(`t.primaryKey = "${table.primaryKey as string}"`);
 			}
 
-			const arr: DBTable[][] = [table.rows];
+			const arr = [table.rows];
 			while (arr.length > 0) {
 				const currArr = arr.shift()!;
 				if (!currArr.length) continue;
@@ -347,8 +346,8 @@ export class GreyDB<Schema = BaseDBSchema> {
 		DBHelper.createSource(computer, rndName, this.folder, srcFileContent, srcFiles);
 
 		finalFileContent.push([
-			`get_custom_object["${this.gcoKey}"] = {}`,
-			`obj = get_custom_object["${this.gcoKey}"]`,
+			`get_custom_object["GreyDB"] = {}`,
+			`obj = get_custom_object["GreyDB"]`,
 			"obj.tables = {}",
 			`obj.owner = ${this.owner}`,
 			`obj.version = ${this.dbVersion}`,
@@ -427,43 +426,13 @@ export class GreyDB<Schema = BaseDBSchema> {
 			}
 		}
 
-		let dbFolder = computer.file(this.folder);
-		if (!dbFolder) {
-			let currPath = "/";
-
-			for (const folderName of this.folder.split("/")) {
-				if (!folderName) continue;
-
-				currPath += folderName;
-				if (!computer.file(currPath)) {
-					const res = computer.createFolder(parentPath(currPath), folderName);
-					if (isType(res, "string")) this.print(`<color=red>${res}`, 1);
-				}
-
-				currPath += "/";
-			}
-
-			dbFolder = computer.file(this.folder);
-		}
-
+		const dbFolder = this.createDatabaseFolder();
 		if (!dbFolder) {
 			this.print("<color=red>Database folder is missing and couldn't create one!", 1);
 			return false;
 		}
 
-		dbFolder.chmod("u+wrx", true);
-		dbFolder.chmod("g+wrx", true);
-		dbFolder.chmod("o-wrx", true);
-		dbFolder.setGroup("database", true);
-
-		let dbFile: GreyHack.File | null = null;
-		for (const file of dbFolder.getFiles()!) {
-			if (!file.isBinary()) continue;
-			if (file.name !== username) continue;
-
-			dbFile = file;
-			break;
-		}
+		const dbFile = dbFolder.getFiles()!.find(file => file.isBinary() && file.name === username);
 
 		if (!dbFile) {
 			this.tables = {} as any;
@@ -490,15 +459,15 @@ export class GreyDB<Schema = BaseDBSchema> {
 			return false;
 		}
 
-		if (!Object.hasOwn(getCustomObject(), this.gcoKey)) return false;
+		if (!Object.hasOwn(getCustomObject(), "GreyDB")) return false;
 
 		this.tables = {} as any;
-		this.owner = getCustomObject()[this.gcoKey]["owner"];
+		this.owner = getCustomObject()["GreyDB"]["owner"];
 
-		const tables: typeof this.tables = getCustomObject()[this.gcoKey]["tables"];
+		const tables: typeof this.tables = getCustomObject()["GreyDB"]["tables"];
 		for (const tableName of Object.keys(tables)) {
-			this.tables[tableName] = new DBTable(tableName);
-			const table = this.tables[tableName];
+			const table = new DBTable(tableName);
+			this.tables[tableName] = table;
 
 			if (tables[tableName]?.primaryKey)
 				table.primaryKey = tables[tableName].primaryKey;
@@ -514,7 +483,7 @@ export class GreyDB<Schema = BaseDBSchema> {
 			table.calculateIndexes();
 		}
 
-		Object.remove(getCustomObject(), this.gcoKey);
+		Object.remove(getCustomObject(), "GreyDB");
 
 		const tookMs = Math.round((time() - startTime) * 1000);
 		if (tookMs > 2000) {
@@ -540,5 +509,38 @@ export class GreyDB<Schema = BaseDBSchema> {
 		this.owner.passwordHash = md5(newPassword);
 		this.save(true);
 		return true;
+	}
+
+	private createDatabaseFolder(): GreyHack.File | null {
+		const computer = this.shell.hostComputer;
+
+		let dbFolder = computer.file(this.folder);
+		if (!dbFolder) {
+			let currPath = "/";
+
+			for (const folderName of this.folder.split("/")) {
+				if (!folderName) continue;
+
+				currPath += folderName;
+				if (!computer.file(currPath)) {
+					const res = computer.createFolder(parentPath(currPath), folderName);
+					if (isType(res, "string")) this.print(`<color=red>${res}`, 1);
+				}
+
+				currPath += "/";
+			}
+
+			dbFolder = computer.file(this.folder);
+		}
+
+		if (!dbFolder)
+			return null;
+
+		dbFolder.chmod("u+wrx", true);
+		dbFolder.chmod("g+wrx", true);
+		dbFolder.chmod("o-wrx", true);
+		dbFolder.setGroup("database", true);
+
+		return dbFolder;
 	}
 }

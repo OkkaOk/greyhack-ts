@@ -59,13 +59,15 @@ command.run = function (_args, options, process) {
 	const stopTime = startTime + timeLimit;
 
 	const octets = [
-		Math.floor(Math.random() * 255),
+		1 + Math.floor(Math.random() * 200),
 		Math.floor(Math.random() * 255),
 		Math.floor(Math.random() * 255),
 		Math.floor(Math.random() * 255),
 	];
 
 	outer: while (true) {
+		console.clear();
+
 		if (timeLimit !== -1 && time() > stopTime)
 			break;
 
@@ -89,6 +91,9 @@ command.run = function (_args, options, process) {
 			break;
 
 		if (!router) continue;
+
+		const netSessionKernel = session.metax.netUse(routerIp, 0);
+		if (netSessionKernel) Libex.exploitLib(routerIp, netSessionKernel.dumpLib(), "", verbose);
 
 		const ports = router.usedPorts();
 		for (const port of ports) {

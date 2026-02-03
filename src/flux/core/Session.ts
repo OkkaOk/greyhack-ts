@@ -43,11 +43,11 @@ export class Session {
 		this.workingDir = "/home/" + this.user;
 
 		this.userLevel = 0;
-		if (this.user == "root") {
+		if (this.user === "root") {
 			this.userLevel = 2;
 			this.workingDir = "/root"
 		}
-		else if (this.user != "guest") {
+		else if (this.user !== "guest") {
 			this.userLevel = 1;
 		}
 
@@ -124,7 +124,7 @@ export class Session {
 				const name = parsedItem[4];
 				// TODO: check correct user
 
-				if (name != "rshell_client") continue;
+				if (name !== "rshell_client") continue;
 				if (!isType(pid, "number")) {
 					console.log("<color=red>Failed to close rshell_client: failed to parse the show_procs");
 					continue;

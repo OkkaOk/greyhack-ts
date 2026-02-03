@@ -1,3 +1,6 @@
+/** biome-ignore-all lint/suspicious/noEmptyInterface: <> */
+/** biome-ignore-all lint/correctness/noUnusedVariables: <> */
+
 interface String {
 	replaceFirst(oldValue: string, newValue: string, offset?: number): string;
 	replaceLast(oldValue: string, newValue: string): string;

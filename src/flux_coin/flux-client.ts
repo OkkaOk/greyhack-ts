@@ -60,7 +60,7 @@ else {
 FluxShell.startInputLoop(() => {
 	const userSymbol = activeUser() === "root" ? "#" : "$";
 
-	let walletName = globals.walletUsername;
+	const walletName = globals.walletUsername;
 	let subWalletName = "none";
 	if (globals.currentSubWallet) {
 		subWalletName = globals.currentSubWallet.getUser();

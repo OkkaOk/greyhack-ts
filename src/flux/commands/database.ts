@@ -85,7 +85,7 @@ command.subcommands[0].run = function (_args, _options, process) {
 
 // Fetch
 command.subcommands[1].run = function (args, options, process) {
-	let limit: number | undefined = undefined;
+	let limit: number | undefined;
 	if ("count" in options) limit = options["count"][0] as number;
 
 	const tableName = args[0] as keyof DBSchema
@@ -117,7 +117,7 @@ command.subcommands[2].run = function (args, options, process) {
 		return EXIT_CODES.GENERAL_ERROR;
 	}
 
-	let limit: number | undefined = undefined;
+	let limit: number | undefined;
 	if ("count" in options) limit = options["count"][0] as number;
 
 	let query: Record<string, string> = {};
@@ -136,7 +136,7 @@ command.subcommands[2].run = function (args, options, process) {
 	}
 
 	const yn = ynPrompt(`Are you sure you want to remove the whole '${args[0]}' table`, "n");
-	if (yn == "n") return EXIT_CODES.SUCCESS;
+	if (yn === "n") return EXIT_CODES.SUCCESS;
 
 	FluxCore.raw.database.deleteTable(tableName);
 	process.write(1, `Removed the table '${tableName}'`);

@@ -88,7 +88,7 @@ command.subcommands[1].run = function (_args, _options, process) {
 	const session = FluxCore.currSession();
 
 	function uninstallRshellService() {
-		let librshell = includeLib("/lib/librshell.so") as GreyHack.Service | null;
+		const librshell = includeLib("/lib/librshell.so") as GreyHack.Service | null;
 		if (!librshell) {
 			process.write(2, "librshell.so doesn't exist on this computer");
 			return false;

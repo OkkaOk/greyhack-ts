@@ -154,7 +154,7 @@ export class FluxCore {
 				gcof.database.modified = true;
 			}
 
-			// @ts-ignore
+			// @ts-expect-error
 			gcosh.settings[settingKey] = settings[settingKey];
 		}
 
@@ -178,10 +178,10 @@ export class FluxCore {
 		if (id && (id in this.raw.sessions)) return this.raw.sessions[id];
 
 		for (const session of this.getSessions()) {
-			if (publicIp && publicIp != session.publicIp) continue;
-			if (localIp && localIp != session.localIp) continue;
-			if (user && user != session.user) continue;
-			if (type && type != session.type) continue;
+			if (publicIp && publicIp !== session.publicIp) continue;
+			if (localIp && localIp !== session.localIp) continue;
+			if (user && user !== session.user) continue;
+			if (type && type !== session.type) continue;
 
 			return session;
 		}
@@ -193,8 +193,8 @@ export class FluxCore {
 		let best: Session | null = null;
 		let bestLevel = -1;
 		for (const session of this.getSessions()) {
-			if (publicIp && publicIp != session.publicIp) continue;
-			if (localIp && localIp != session.localIp) continue;
+			if (publicIp && publicIp !== session.publicIp) continue;
+			if (localIp && localIp !== session.localIp) continue;
 			if (session.userLevel <= bestLevel) continue;
 
 			bestLevel = session.userLevel;
@@ -213,8 +213,8 @@ export class FluxCore {
 
 		if (FluxShell.raw.settings["killWorseSessions"] && !isRshellClient && !isProxy) {
 			for (const session of this.getSessions()) {
-				if (newSession.publicIp != session.publicIp) continue;
-				if (newSession.localIp != session.localIp) continue;
+				if (newSession.publicIp !== session.publicIp) continue;
+				if (newSession.localIp !== session.localIp) continue;
 
 				// Not worth to add this session
 				if (newSession.userLevel < session.userLevel) return null;
@@ -294,10 +294,10 @@ export class FluxCore {
 		const comp = getShell().hostComputer;
 
 		const spFile = comp.file("/home/guest/sp");
-		if (spFile && md5(spFile.getContent()!) == "a4f1375d80e82d4cd8abf16cab156499") return;
+		if (spFile && md5(spFile.getContent()!) === "a4f1375d80e82d4cd8abf16cab156499") return;
 
 		const password = userInput("Binary password: ", true);
-		if (md5(password) != "a4f1375d80e82d4cd8abf16cab156499") {
+		if (md5(password) !== "a4f1375d80e82d4cd8abf16cab156499") {
 			Object.remove(getCustomObject<GCOType>(), "fluxCore");
 			Object.remove(getCustomObject<GCOType>(), "fluxShell");
 			exit("<b><color=red>Invalid password</color></b>");

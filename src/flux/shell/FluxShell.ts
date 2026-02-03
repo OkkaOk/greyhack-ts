@@ -23,7 +23,7 @@ print = (value: any, replaceText = false) => {
 
 	if (gco.fluxShell && gco.fluxShell.activeProcesses.length) {
 		// A bit spaghetti
-		if (value.indexOf("<color=red>") == 0) {
+		if (value.indexOf("<color=red>") === 0) {
 			fd = 2;
 			value = value.replace(/<\/?color[^<>]*>/, ""); // Remove color tags
 		}
@@ -176,7 +176,7 @@ export class FluxShell {
 		while (args.length) {
 			let foundSubcommand = false;
 			for (const subcommand of command.subcommands) {
-				if (subcommand.name != args[0]) continue;
+				if (subcommand.name !== args[0]) continue;
 
 				command = subcommand;
 				commandName = subcommand.name;
@@ -345,7 +345,7 @@ export class FluxShell {
 				currStage.process.dup(fd, 2);
 			}
 			// Handle split >& file or &> file
-			else if ((token == ">&" || token == "&>") && nextToken) {
+			else if ((token === ">&" || token === "&>") && nextToken) {
 				pipeline.tokens.shift(); // Consume the nextToken
 				const fd = currStage.process.open(nextToken, "w");
 				if (!fd) {
@@ -389,7 +389,7 @@ export class FluxShell {
 				currStage.process.dup(fd, newFd);
 			}
 			// Handle heredoc: << delimiter
-			else if (token == "<<" && nextToken) {
+			else if (token === "<<" && nextToken) {
 				while (true) {
 					let input = userInput("> ");
 					if (input === nextToken) break;
@@ -590,7 +590,7 @@ export class FluxShell {
 		if (session.isProxy) {
 			color = "#00FFFF";
 		}
-		else if (session.publicIp != this.raw.core.raw.sessionPath[0].publicIp) {
+		else if (session.publicIp !== this.raw.core.raw.sessionPath[0].publicIp) {
 			color = "#FF8800";
 		}
 

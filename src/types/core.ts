@@ -1,8 +1,8 @@
-import { FluxCore } from "../flux/core/FluxCore";
-import { GreyDB } from "../flux/core/GreyDB";
-import { Session } from "../flux/core/Session";
-import { Command } from "../flux/shell/Command";
-import { Process } from "../flux/shell/Process";
+import type { FluxCore } from "../flux/core/FluxCore";
+import type { GreyDB } from "../flux/core/GreyDB";
+import type { Session } from "../flux/core/Session";
+import type { Command } from "../flux/shell/Command";
+import type { Process } from "../flux/shell/Process";
 import type { MetaLibVuln } from "./hacking";
 
 export interface CollectionData {

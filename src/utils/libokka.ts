@@ -3,13 +3,13 @@ import type { GCOType } from "../types/core";
 include("./prototypeExtensions.ts")
 
 export function updateLib(libPath: string): GreyHack.LibTypes[keyof GreyHack.LibTypes] | null {
-	let lib = includeLib(libPath);
+	const lib = includeLib(libPath);
 	if (!lib) {
 		console.log(`A library doesn't exist at path: ${libPath}`);
 		return null;
 	}
 
-	const fluxCore = getCustomObject<GCOType>()["fluxCore"];
+	const fluxCore = getCustomObject<GCOType>().fluxCore;
 	if (!fluxCore)
 		return null;
 
@@ -137,7 +137,7 @@ export function basename(path: string) {
 }
 
 export function isValidMd5(md5: string): boolean {
-	if (md5.length != 32) return false;
+	if (md5.length !== 32) return false;
 	for (const c of md5) {
 		const num = code(c);
 		// Outside of 0-9 and a-f

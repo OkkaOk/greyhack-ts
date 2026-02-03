@@ -112,13 +112,13 @@ function removeQuotes(tokens: ExtToken[]): ExtToken[] {
 		let inQuotes = false;
 
 		for (const c of token.value) {
-			if (inQuotes && c == quoteChar) {
+			if (inQuotes && c === quoteChar) {
 				inQuotes = false;
 				quoteChar = "";
 				continue;
 			}
 
-			if (!inQuotes && (c == char(34) || c == char(39))) {
+			if (!inQuotes && (c === char(34) || c === char(39))) {
 				inQuotes = true;
 				quoteChar = c;
 				continue;
@@ -168,14 +168,14 @@ export function tokenize(input: string): string[] {
 		i += 1;
 		const c = input[i];
 
-		if (inQuotes && c == quoteChar) {
+		if (inQuotes && c === quoteChar) {
 			inQuotes = false;
 			quoteChar = "";
 			data.current += c;
 			continue;
 		}
 
-		if (!inQuotes && (c == char(34) || c == char(39))) { // " or '
+		if (!inQuotes && (c === char(34) || c === char(39))) { // " or '
 			inQuotes = true;
 			quoteChar = c;
 			data.current += c;
@@ -188,20 +188,20 @@ export function tokenize(input: string): string[] {
 		}
 
 		const nextTwo = slice(input, i, i + 2);
-		if (c == " ") {
+		if (c === " ") {
 			pushCurrent();
 		}
-		else if (nextTwo == "&&") {
+		else if (nextTwo === "&&") {
 			pushCurrent();
 			tokens.push("&&");
 			i += 1;
 		}
-		else if (nextTwo == "||") {
+		else if (nextTwo === "||") {
 			pushCurrent();
 			tokens.push("||");
 			i += 1;
 		}
-		else if (c == ";") {
+		else if (c === ";") {
 			pushCurrent();
 			tokens.push(c);
 		}

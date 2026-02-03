@@ -43,7 +43,7 @@ String.prototype.format = function (...formats) {
 
 	for (const format of Object.values(matches)) {
 		let length: string | number = 0;
-		if (format[1] == "-" || format[1] == ".") {
+		if (format[1] === "-" || format[1] === ".") {
 			length = slice(format, 2, format.length - 1).toInt();
 		}
 		else {
@@ -63,11 +63,11 @@ String.prototype.format = function (...formats) {
 			if (format[-1] === "d") {
 				strItem = strItem.padLeft(length - strItem.length);
 			}
-			else if (format[-1] == "f" && length) {
+			else if (format[-1] === "f" && length) {
 				strItem = item.toFixed(length);
 			}
 		}
-		else if (format[1] == "-") {
+		else if (format[1] === "-") {
 			strItem = strItem.padRight(length - strItem.length);
 		}
 		else {

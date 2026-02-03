@@ -138,7 +138,7 @@ export class JSON {
 		while (this.pos < this.textLength) {
 			const key = this.parseString();
 			this.skipWs();
-			if (this.peek() != ":") break;
+			if (this.peek() !== ":") break;
 
 			this.pos += 1;
 			const value = this.parseValue();

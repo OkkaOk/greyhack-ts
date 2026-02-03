@@ -1,32 +1,30 @@
 {
-  // Visit https://aka.ms/tsconfig to read more about this file
-  "compilerOptions": {
-    // File Layout
-    // "rootDir": "./src",
-	"module": "preserve",
-	"moduleResolution": "bundler",
-	
-	"types": ["@grey-ts/types"],
-	"noLib": true,
-
-    // Stricter Typechecking Options
-    "strict": true,
-    // "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": true,
-
-    // Style Options
-    "noImplicitReturns": true,
-    "noImplicitOverride": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true,
-    "noPropertyAccessFromIndexSignature": true,
-
-    "isolatedModules": true,
-    "noUncheckedSideEffectImports": true,
-	"verbatimModuleSyntax": true,
-	"noEmit": true,
-	"allowArbitraryExtensions": true,
-    "skipLibCheck": false,
-  }
+	// Visit https://aka.ms/tsconfig to read more about this file
+	"compilerOptions": {
+		// File Layout
+		// "rootDir": "./src",
+		"module": "preserve",
+		"moduleResolution": "bundler",
+		"types": [
+			"@grey-ts/types"
+		],
+		"noLib": true,
+		// Stricter Typechecking Options
+		"strict": true,
+		// "noUncheckedIndexedAccess": true,
+		"exactOptionalPropertyTypes": true,
+		// Style Options
+		"noImplicitReturns": true,
+		"noImplicitOverride": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"noFallthroughCasesInSwitch": true,
+		"noPropertyAccessFromIndexSignature": true,
+		"isolatedModules": true,
+		"noUncheckedSideEffectImports": true,
+		"verbatimModuleSyntax": true,
+		"noEmit": true,
+		"allowArbitraryExtensions": true,
+		"skipLibCheck": false,
+	}
 }

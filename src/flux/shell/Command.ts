@@ -1,5 +1,5 @@
 import type { GCOType } from "../../types/core";
-import { EXIT_CODES } from "./FluxShell";
+import type { EXIT_CODES } from "./FluxShell";
 import type { Process } from "./Process";
 
 type CommandRunRequirement = "hasShell";
@@ -113,7 +113,7 @@ export class Command<T extends object = any> implements CommandData {
 
 		let hasHelpOption = false;
 		for (const option of this.options) {
-			if (option.name != "help") continue;
+			if (option.name !== "help") continue;
 			hasHelpOption = true;
 			break;
 		}
@@ -137,7 +137,7 @@ export class Command<T extends object = any> implements CommandData {
 			this.subcommands.push(subcommand);
 		}
 
-		const isSubCommand = this.fullName != this.name;
+		const isSubCommand = this.fullName !== this.name;
 
 		if (this.isFluxCommand && !isSubCommand) {
 			const fluxSh = getCustomObject<GCOType>()["fluxShell"]!;
@@ -165,7 +165,7 @@ export class Command<T extends object = any> implements CommandData {
 
 		for (let i = optionEndIndex; i >= 0; i--) {
 			const arg = args[i];
-			if (!arg || arg[0] != "-") continue;
+			if (!arg || arg[0] !== "-") continue;
 
 			let nextArg: string | null = null;
 			if (args.hasIndex(i + 1)) {
@@ -179,7 +179,7 @@ export class Command<T extends object = any> implements CommandData {
 				options["overrideArgs"] = [true];
 			}
 
-			const takesValue = option && option.type != "boolean";
+			const takesValue = option && option.type !== "boolean";
 
 			// Handles long flags: --key=value or --key value or --key
 			// also single short flags: -k=value or -k value or -k
@@ -190,7 +190,7 @@ export class Command<T extends object = any> implements CommandData {
 				if (arg.indexOf("=") !== null) {
 					value = slice(arg, arg.indexOf("=")! + 1);
 				}
-				else if (takesValue && nextArg && (nextArg[0] != "-" || (nextArgNumeric && option.type === "number"))) {
+				else if (takesValue && nextArg && (nextArg[0] !== "-" || (nextArgNumeric && option.type === "number"))) {
 					value = nextArg;
 					args.remove(i + 1);
 				}

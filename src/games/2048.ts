@@ -9,7 +9,7 @@ enum Direction {
 
 const gridWidth = 4 as const;
 
-let grid: number[] = [];
+const grid: number[] = [];
 
 function startGame() {
 	for (let i = 0; i < gridWidth ** 2; i++) {
@@ -187,7 +187,7 @@ const colorMap: Record<number, string> = {
 }
 
 function colorize(value: number): string {
-	let valueStr = value.toString();
+	const valueStr = value.toString();
 	// if (valueStr.length < 5)
 	// 	valueStr = valueStr.padRight(5 - valueStr.length, "§");
 	const color = colorMap[value] ?? "#eeff00"

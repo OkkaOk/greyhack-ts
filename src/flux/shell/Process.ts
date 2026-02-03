@@ -201,7 +201,7 @@ export class Process {
 
 		// I could save the file everytime something gets written to it but I like
 		// it this way when we only save after we close it (typically after command)
-		if (stream.file && (stream.mode == "w" || stream.mode == "rw")) {
+		if (stream.file && (stream.mode === "w" || stream.mode === "rw")) {
 			if (!stream.file.hasPermission("w")) {
 				this.write(2, "No write permission to file: " + stream.file.path());
 				return false;
