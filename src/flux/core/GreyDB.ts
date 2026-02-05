@@ -87,12 +87,11 @@ class DBTable implements DBTableType {
 
 	setIndex(row: any, index: number) {
 		for (const key of Object.keys(row)) {
-			if (!this.kIndex[key]) this.kIndex[key] = {};
+			this.kIndex[key] ??= {};
 
 			const colValue = row[key];
-			if (!this.kIndex[key][colValue])
-				this.kIndex[key][colValue] = [];
 
+			this.kIndex[key][colValue] ??= [];
 			this.kIndex[key][colValue].push(index);
 		}
 	}

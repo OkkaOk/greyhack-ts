@@ -225,13 +225,11 @@ export class Libex {
 	}
 
 	private static collectFileData(publicIp: string, file: GreyHack.File, dataKey: keyof CollectionData) {
-		if (!FluxCore.raw.data[publicIp]) {
-			FluxCore.raw.data[publicIp] = {
-				banks: {},
-				mails: {},
-				users: {}
-			};
-		}
+		FluxCore.raw.data[publicIp] ??= {
+			banks: {},
+			mails: {},
+			users: {}
+		};
 
 		const networkData = FluxCore.raw.data[publicIp];
 
@@ -246,7 +244,7 @@ export class Libex {
 			const user = parts[0];
 			const hash = parts[1];
 
-			if (networkData[dataKey][user])
+			if (user in networkData[dataKey])
 				continue;
 
 			const deciphered = FluxCore.decipher(hash);

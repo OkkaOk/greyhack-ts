@@ -13,28 +13,27 @@ export const EXIT_CODES = {
 	SUCCESS: 0,
 } as const;
 
-const rawPrint: (val: string, replace?: boolean) => null = print;
+const oldLog = console.log;
 
-print = (value: any, replaceText = false) => {
-	value = str(value);
-
+console.log = (...data: any[]) => {
 	const gco = getCustomObject<GCOType>();
-	let fd = 1;
+	if (!gco.fluxShell || !gco.fluxShell.activeProcesses.length || !data.length) {
+		oldLog(...data);
+		return null;
+	}
 
-	if (gco.fluxShell && gco.fluxShell.activeProcesses.length) {
+	for (let i = 0; i < data.length; i++) {
+		let fd = 1;
+		let output = str(data[i]);
+
 		// A bit spaghetti
-		if (value.indexOf("<color=red>") === 0) {
+		if (output.indexOf("<color=red>") === 0) {
 			fd = 2;
-			value = value.replace(/<\/?color[^<>]*>/, ""); // Remove color tags
+			output = output.replace(/<\/?color[^<>]*>/, ""); // Remove color tags
 		}
-
-		if (replaceText) gco.fluxShell.activeProcesses[-1].flush(fd);
-
-		gco.fluxShell.activeProcesses[-1].write(fd, value);
+		gco.fluxShell.activeProcesses[-1].write(fd, output);
 	}
-	else {
-		rawPrint(value, replaceText);
-	}
+
 	return null;
 };
 
@@ -96,7 +95,7 @@ export class FluxShell {
 		function printOut() {
 			const data = FluxShell.mainProcess.read(1, true);
 			if (!data) return;
-			rawPrint(data);
+			oldLog(data);
 		}
 
 		function printErr() {
@@ -107,7 +106,7 @@ export class FluxShell {
 
 			const lines = FluxShell.mainProcess.read(2);
 			for (const line of lines)
-				rawPrint(`<color=${color}>${line}`);
+				oldLog(`<color=${color}>${line}`);
 		}
 
 		const mainProcess = new Process(0, "flux");
